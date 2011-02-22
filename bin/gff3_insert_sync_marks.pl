@@ -35,7 +35,6 @@ for my $file ( @ARGV ) {
 $tempfile->close;
 
 my $temp_backwards = File::ReadBackwards->new( "$tempfile" );
-my $first_sync = 1;
 # print up to and not including the first sync mark (to get rid of the
 # unnecessary first one
 while( my $line = $temp_backwards->readline ) {

@@ -14,11 +14,12 @@ __END__
 
 =head1 NAME
 
-gff3_insert_sync_marks.pl - efficiently insert sync (###) marks into a
-GFF3 file.  Prints resulting gff3 to STDOUT.
+gff3_insert_sync_directives.pl - efficiently insert sync (###)
+directives into GFF3 taken from one or more GFF3 files.  Prints result
+to STDOUT.
 
 =head1 USAGE
 
-    gff3_insert_sync_marks.pl  file.gff3  anotherfile.gff3 ... > with_syncs.gff3
+    gff3_insert_sync_directives.pl  file.gff3 ... > with_syncs.gff3
 
 =cut

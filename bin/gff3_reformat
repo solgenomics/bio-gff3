@@ -174,7 +174,7 @@ while (<$in_fh>) {
 	    $val = $new;
 	  }
 	}
-	
+
 	# add an ID if we got -I option and this feature has no ID
 	if ( $opt{I} ) {
 	  unless( grep $_->[0] eq 'ID', @attrs ) {
@@ -232,9 +232,13 @@ sub sr_str {
 
 __END__
 
+=head1 NAME
+
+gff3_reformat - multipurpose reformatting and cleanup tool for GFF3
+
 =head1 USAGE
 
-  gff3_reformat.pl [options] gff3_file gff3_file ...
+  gff3_reformat [options] gff3_file gff3_file ...
 
   Reformat one or more GFF3 files according to the options given.  If
   no files are given, reads GFF3 from stdin.  Prints the altered GFF3

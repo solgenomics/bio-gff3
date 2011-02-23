@@ -8,6 +8,8 @@ use Getopt::Std;
 use Tie::Cache::LRU;
 use URI::Escape;
 
+use Pod::Usage;
+
 use Data::Dumper;
 
 ########### GLOBAL VARS ########
@@ -17,81 +19,8 @@ our $lb_size = 200;
 
 ################################
 
-sub usage {
-  my $message = shift || '';
-  $message = "Error: $message\n" if $message;
-  die <<EOU;
-$message
-Usage:
-  $FindBin::Script [options] gff3_file gff3_file ...
-
-  Reformat one or more GFF3 files according to the options given.  If
-  no files are given, reads GFF3 from stdin.  Prints the altered GFF3
-  to stdout.
-
-  Options:
-
-    -s
-     if passed, sort the gff3 file by reference sequence and start
-     coordinate.  Sync (###) markers will not be preserved.
-
-    -S fasta_file
-     add sequence-region statements for the sequences in the given
-     FASTA file
-
-    -L expr
-     run the given perl expression on each line of gff3 (which is in
-     $_), before doing anything else to it.
-
-    -A attr_name=expr,attr_name=expr,...
-     run the expression on the contents of attribute attr_name.  The
-     attribute values will be url-decoded before running the pattern,
-     then re-encoded after alteration.  attr_names are matched in a
-     regexp, so you can do, ID|Parent=s/foo/bar/ to do the substitution
-     on both ID and Parent attributes
-
-    -u uniq_sep
-     set the separator to use when appending a uniqifying number
-     suffix to an identifier.  Default '$uniq_sep'
-
-    -U
-     uniqify all identifiers (ID and Parent attributes) by appending
-     '${uniq_sep}1', '${uniq_sep}2.  If a uniqification suffix seems
-     to already be present, it will be replaced.
-
-    -I
-     Make up and add IDs to elements that don't have them.  Made up
-     IDs will be of the form <featuretype>_<unique number>.
-
-    -l $lb_size
-     uniqification lookback buffer size, defaults to $lb_size
-     identifiers.  When an ID is changed in a uniqification, the
-     Parent attributes of subfeatures need to also be changed, and the
-     lookback buffer is consulted to find the mapping of old ID -> new
-     ID.  If it's not found, the script dies.
-     Only used with -U.
-
-    -f <file>
-     list of GFF3 files to operate on as input.  if given, this list
-     will be used in addition to STDIN and files on the command line
-
-    -e pattern
-     Features with IDs matching this pattern will have no subfeatures,
-     and thus can be safely excluded from the uniqifying lookback buffer.
-     Only used with -U.  Example: -e /GTH_.+_CDS_/
-
-    -i
-     if set, interleave ##sequence-region pragmas with the other gff3
-     lines such that sequence-region pragmas appear just before the
-     lines where that sequence is used.  Defaults to off, which means
-     that sequence-region statements go at the top of the file
-
-EOU
-}
-sub HELP_MESSAGE {usage()}
-
 our %opt;
-getopts('sl:e:A:S:u:UL:If:i',\%opt) or usage();
+getopts('sl:e:A:S:u:UL:If:i',\%opt) or pod2usage();
 $uniq_sep = $opt{u} if defined $opt{u};
 $lb_size = $opt{l} if defined $opt{l};
 
@@ -299,3 +228,73 @@ sub sr_str {
   return "##sequence-region $sr->{name} $sr->{start} $sr->{end}";
 }
 
+
+
+__END__
+
+=head1 USAGE
+
+  gff3_reformat.pl [options] gff3_file gff3_file ...
+
+  Reformat one or more GFF3 files according to the options given.  If
+  no files are given, reads GFF3 from stdin.  Prints the altered GFF3
+  to stdout.
+
+  Options:
+
+    -s
+     if passed, sort the gff3 file by reference sequence and start
+     coordinate.  Sync (###) markers will not be preserved.
+
+    -S fasta_file
+     add sequence-region statements for the sequences in the given
+     FASTA file
+
+    -L expr
+     run the given perl expression on each line of gff3 (which is in
+     $_), before doing anything else to it.
+
+    -A attr_name=expr,attr_name=expr,...
+     run the expression on the contents of attribute attr_name.  The
+     attribute values will be url-decoded before running the pattern,
+     then re-encoded after alteration.  attr_names are matched in a
+     regexp, so you can do, ID|Parent=s/foo/bar/ to do the substitution
+     on both ID and Parent attributes
+
+    -u uniq_sep
+     set the separator to use when appending a uniqifying number
+     suffix to an identifier.  Default '$uniq_sep'
+
+    -U
+     uniqify all identifiers (ID and Parent attributes) by appending
+     '${uniq_sep}1', '${uniq_sep}2.  If a uniqification suffix seems
+     to already be present, it will be replaced.
+
+    -I
+     Make up and add IDs to elements that don't have them.  Made up
+     IDs will be of the form <featuretype>_<unique number>.
+
+    -l $lb_size
+     uniqification lookback buffer size, defaults to $lb_size
+     identifiers.  When an ID is changed in a uniqification, the
+     Parent attributes of subfeatures need to also be changed, and the
+     lookback buffer is consulted to find the mapping of old ID -> new
+     ID.  If it's not found, the script dies.
+     Only used with -U.
+
+    -f <file>
+     list of GFF3 files to operate on as input.  if given, this list
+     will be used in addition to STDIN and files on the command line
+
+    -e pattern
+     Features with IDs matching this pattern will have no subfeatures,
+     and thus can be safely excluded from the uniqifying lookback buffer.
+     Only used with -U.  Example: -e /GTH_.+_CDS_/
+
+    -i
+     if set, interleave ##sequence-region pragmas with the other gff3
+     lines such that sequence-region pragmas appear just before the
+     lines where that sequence is used.  Defaults to off, which means
+     that sequence-region statements go at the top of the file
+
+=cut

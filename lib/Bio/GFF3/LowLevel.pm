@@ -92,7 +92,8 @@ sub gff3_parse_feature {
 
 sub gff3_parse_attributes {
     my ( $attr_string ) = @_;
-    return undef if !defined $attr_string || $attr_string eq '.';
+
+    return {} if !defined $attr_string || $attr_string eq '.';
 
     chomp $attr_string;
 
@@ -134,7 +135,9 @@ sub gff3_format_feature {
 sub gff3_format_attributes {
   my ( $attr ) = @_;
 
-  return join ';' => (
+  return '.' unless defined $attr;
+
+  my $astring = join ';' => (
     map {
       my $key = $_;
       my $val = $attr->{$key};
@@ -143,6 +146,7 @@ sub gff3_format_attributes {
     } sort keys %$attr
  );
 
+  return length $astring ? $astring : '.';
 }
 
 =func gff3_escape( $string )

@@ -34,7 +34,7 @@ roundtrip(
 roundtrip(
     gff3_escape("Noggin,+-\%Foo\tbar")."\tbarsource\tmatch\t234\t234\t0.0\t+\t.\t.\n",
     {
-        'attributes' => undef,
+        'attributes' => {},
         'end' => '234',
         'phase' => undef,
         'score' => '0.0',
@@ -45,6 +45,10 @@ roundtrip(
         'type' => 'match'
     },
   );
+
+is( gff3_format_attributes( undef ), '.', 'format undef attributes' );
+is( gff3_format_attributes( {}    ), '.', 'format empty attributes' );
+is( gff3_format_attributes( { zee => 'zoz' } ), 'zee=zoz', 'format malformed attributes' );
 
 done_testing;
 

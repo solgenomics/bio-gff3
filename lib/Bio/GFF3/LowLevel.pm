@@ -62,6 +62,33 @@ my @gff3_field_names = qw(
 
 =func gff3_parse_feature( $line )
 
+Given a string containing a GFF3 feature line (i.e. not a comment),
+parses it and returns a hashref of its information, of the form:
+
+    {
+        seq_id => 'chr02',
+        source => 'AUGUSTUS',
+        type   => 'transcript'
+        start  => '23486',
+        end    => '48209',
+        score  => '0.02',
+        strand => '+',
+        phase  => undef,
+        attributes => {
+            ID => [
+                'chr02.g3.t1'
+              ],
+            Parent => [
+                'chr02.g3'
+              ],
+          },
+    }
+
+Note that all values are simple scalars, except for C<attributes>,
+which is a hashref as returned by L</gff3_parse_attributes> below.
+
+Unescaping is performed according to the GFF3 specification.
+
 =cut
 
 sub gff3_parse_feature {
@@ -88,6 +115,18 @@ sub gff3_parse_feature {
 
 =func gff3_parse_attributes( $attr_string )
 
+Given a GFF3 attribute string, parse it and return a hashref of its
+data, of the form:
+
+    {
+      'attribute_name' => [ value, value, ... ],
+      ...
+    }
+
+Always returns a hashref.  If the passed attribute string is
+undefined, or ".", the hashref returned will be empty.  Attribute
+values are always arrayrefs, even if they have only one value.
+
 =cut
 
 sub gff3_parse_attributes {
@@ -101,13 +140,21 @@ sub gff3_parse_attributes {
     for my $a ( split /;/, $attr_string ) {
         next unless $a;
         my ( $name, $values ) = split /=/, $a, 2;
+        next unless defined $values;
         push @{$attrs{$name}}, map gff3_unescape($_), split /,/, $values;
     }
 
     return \%attrs;
 }
 
-=func gff3_format_feature( \@fields, \%attrs )
+=func gff3_format_feature( \%fields )
+
+Given a hashref of feature information in the same format returned by
+L</gff3_parse_feature> above, constructs a correctly-escaped line of
+GFF3 encoding that information.
+
+The line ends with a single newline character, a UNIX-style line
+ending, regardless of the local operating system.
 
 =cut
 
@@ -118,7 +165,8 @@ sub gff3_format_feature {
     $attr_string = '.' unless defined $attr_string;
 
     $attr_string = gff3_format_attributes( $attr_string )
-        if ref( $attr_string ) eq 'HASH' && !Scalar::Util::blessed( $attr_string );
+        if    ref( $attr_string ) eq 'HASH'
+           && ! Scalar::Util::blessed( $attr_string );
 
     return join( "\t",
                  ( map { defined $_ ? gff3_escape($_) : '.' }
@@ -129,6 +177,16 @@ sub gff3_format_feature {
 }
 
 =func gff3_format_attributes( \%attrs )
+
+Given a hashref of GFF3 attributes in the same format returned by
+L</gff3_parse_attributes> above, returns a correctly formatted and
+escaped GFF3 attribute string (the 9th column of a GFF3 feature line)
+encoding those attributes.
+
+For convenience, single-valued attributes can have simple scalars as
+values in the passed hashref.  For example, if a feature has only one
+C<ID> attribute (as it should), you can pass C<{ ID =&gt; 'foo' }>
+instead of C<{ ID =&gt; ['foo'] }}>.
 
 =cut
 
@@ -151,6 +209,9 @@ sub gff3_format_attributes {
 
 =func gff3_escape( $string )
 
+Given a string, escapes special characters in that string according to
+the GFF3 specification.
+
 =cut
 
 sub gff3_escape {
@@ -158,6 +219,8 @@ sub gff3_escape {
 }
 
 =func gff3_unescape( $string )
+
+Unescapes a GFF3-escaped string.
 
 =cut
 

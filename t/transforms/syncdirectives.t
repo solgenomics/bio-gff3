@@ -3,70 +3,28 @@ use warnings;
 use Test::More;
 
 use IO::Scalar;
+use File::Slurp;
 use File::Temp;
 
 use Bio::GFF3::Transform::SyncDirectives 'gff3_add_sync_directives';
 
 {
-    my $t1 = tempfile_containing(<<EOG);
-##gff-version 3
-##feature-ontology http://song.cvs.sourceforge.net/*checkout*/song/ontology/sofa.obo?revision=1.93
-SL2.40ch00	ITAG_eugene	gene	16437	18189	.	+	.	Alias=Solyc00g005000;ID=gene:Solyc00g005000.2;Name=Solyc00g005000.2;from_BOGAS=1;length=1753
-SL2.40ch00	ITAG_eugene	mRNA	16437	18189	.	+	.	ID=mRNA:Solyc00g005000.2.1;Name=Solyc00g005000.2.1;Parent=gene:Solyc00g005000.2;from_BOGAS=1;length=1753;nb_exon=2
-SL2.40ch00	ITAG_eugene	exon	16437	17275	.	+	.	ID=exon:Solyc00g005000.2.1.1;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	five_prime_UTR	16437	16479	.	+	.	ID=five_prime_UTR:Solyc00g005000.2.1.0;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	16480	17275	.	+	0	ID=CDS:Solyc00g005000.2.1.1;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	intron	17276	17335	.	+	.	ID=intron:Solyc00g005000.2.1.1;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	exon	17336	18189	.	+	0	ID=exon:Solyc00g005000.2.1.2;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	17336	17940	.	+	2	ID=CDS:Solyc00g005000.2.1.2;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	three_prime_UTR	17941	18189	.	+	.	ID=three_prime_UTR:Solyc00g005000.2.1.0;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	gene	68062	68764	.	+	.	Alias=Solyc00g005020;ID=gene:Solyc00g005020.1;Name=Solyc00g005020.1;from_BOGAS=1;length=703
-SL2.40ch00	ITAG_eugene	mRNA	68062	68764	.	+	.	ID=mRNA:Solyc00g005020.1.1;Name=Solyc00g005020.1.1;Parent=gene:Solyc00g005020.1;from_BOGAS=1;length=703;nb_exon=3
-SL2.40ch00	ITAG_eugene	exon	68062	68211	.	+	0	ID=exon:Solyc00g005020.1.1.1;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	68062	68211	.	+	0	ID=CDS:Solyc00g005020.1.1.1;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	intron	68212	68343	.	+	.	ID=intron:Solyc00g005020.1.1.1;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	exon	68344	68568	.	+	0	ID=exon:Solyc00g005020.1.1.2;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	68344	68568	.	+	0	ID=CDS:Solyc00g005020.1.1.2;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	intron	68569	68653	.	+	.	ID=intron:Solyc00g005020.1.1.2;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	exon	68654	68764	.	+	0	ID=exon:Solyc00g005020.1.1.3;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	68654	68764	.	+	0	ID=CDS:Solyc00g005020.1.1.3;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-EOG
-
+    my $test_gff3 = 't/data/gff3_with_syncs.gff3';
+    my $t1 = file_without_syncs( $test_gff3 );
     my $out = undef;
     gff3_add_sync_directives( IO::Scalar->new( \$out ), $t1 );
 
-    is( $out, <<EOG, 'got right sync marks' );
-##gff-version 3
-##feature-ontology http://song.cvs.sourceforge.net/*checkout*/song/ontology/sofa.obo?revision=1.93
-SL2.40ch00	ITAG_eugene	gene	16437	18189	.	+	.	Alias=Solyc00g005000;ID=gene:Solyc00g005000.2;Name=Solyc00g005000.2;from_BOGAS=1;length=1753
-SL2.40ch00	ITAG_eugene	mRNA	16437	18189	.	+	.	ID=mRNA:Solyc00g005000.2.1;Name=Solyc00g005000.2.1;Parent=gene:Solyc00g005000.2;from_BOGAS=1;length=1753;nb_exon=2
-SL2.40ch00	ITAG_eugene	exon	16437	17275	.	+	.	ID=exon:Solyc00g005000.2.1.1;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	five_prime_UTR	16437	16479	.	+	.	ID=five_prime_UTR:Solyc00g005000.2.1.0;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	16480	17275	.	+	0	ID=CDS:Solyc00g005000.2.1.1;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	intron	17276	17335	.	+	.	ID=intron:Solyc00g005000.2.1.1;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	exon	17336	18189	.	+	0	ID=exon:Solyc00g005000.2.1.2;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	17336	17940	.	+	2	ID=CDS:Solyc00g005000.2.1.2;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	three_prime_UTR	17941	18189	.	+	.	ID=three_prime_UTR:Solyc00g005000.2.1.0;Parent=mRNA:Solyc00g005000.2.1;from_BOGAS=1
-###
-SL2.40ch00	ITAG_eugene	gene	68062	68764	.	+	.	Alias=Solyc00g005020;ID=gene:Solyc00g005020.1;Name=Solyc00g005020.1;from_BOGAS=1;length=703
-SL2.40ch00	ITAG_eugene	mRNA	68062	68764	.	+	.	ID=mRNA:Solyc00g005020.1.1;Name=Solyc00g005020.1.1;Parent=gene:Solyc00g005020.1;from_BOGAS=1;length=703;nb_exon=3
-SL2.40ch00	ITAG_eugene	exon	68062	68211	.	+	0	ID=exon:Solyc00g005020.1.1.1;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	68062	68211	.	+	0	ID=CDS:Solyc00g005020.1.1.1;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	intron	68212	68343	.	+	.	ID=intron:Solyc00g005020.1.1.1;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	exon	68344	68568	.	+	0	ID=exon:Solyc00g005020.1.1.2;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	68344	68568	.	+	0	ID=CDS:Solyc00g005020.1.1.2;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	intron	68569	68653	.	+	.	ID=intron:Solyc00g005020.1.1.2;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	exon	68654	68764	.	+	0	ID=exon:Solyc00g005020.1.1.3;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-SL2.40ch00	ITAG_eugene	CDS	68654	68764	.	+	0	ID=CDS:Solyc00g005020.1.1.3;Parent=mRNA:Solyc00g005020.1.1;from_BOGAS=1
-EOG
+    is( $out, read_file( $test_gff3 ), 'got right sync marks' );
 }
 
 done_testing;
 
-
-sub tempfile_containing {
+sub file_without_syncs {
     my $t = File::Temp->new;
-    $t->print( @_ );
+    open my $f, '<', +shift or die;
+    while( my $line = <$f> ) {
+        $t->print( $line ) unless $line =~ /^###$/;
+    }
     $t->close;
     return $t;
 }

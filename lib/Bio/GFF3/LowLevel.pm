@@ -92,9 +92,9 @@ sub gff3_parse_feature {
 
 sub gff3_parse_attributes {
     my ( $attr_string ) = @_;
-    chomp $attr_string;
-
     return undef if !defined $attr_string || $attr_string eq '.';
+
+    chomp $attr_string;
 
     my %attrs;
     for my $a ( split /;/, $attr_string ) {

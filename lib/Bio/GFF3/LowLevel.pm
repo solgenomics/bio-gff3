@@ -49,7 +49,7 @@ our @EXPORT_OK = qw(
 );
 
 my @gff3_field_names = qw(
-    seqid
+    seq_id
     source
     type
     start

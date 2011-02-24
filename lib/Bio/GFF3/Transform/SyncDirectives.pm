@@ -1,4 +1,6 @@
 package Bio::GFF3::Transform::SyncDirectives;
+# ABSTRACT: insert sync (###) directives into an existing GFF3 file.
+
 use strict;
 use warnings;
 
@@ -56,11 +58,6 @@ sub gff3_add_sync_directives {
 1;
 
 __END__
-
-=head1 NAME
-
-Bio::GFF3::Transform::SyncDirectives - insert sync (###) directives
-into an existing GFF3 file.
 
 =head1 SYNOPSIS
 

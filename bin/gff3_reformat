@@ -1,4 +1,8 @@
 #!/usr/bin/env perl
+
+# PODNAME: gff3_reformat
+# ABSTRACT: multipurpose reformatting and cleanup tool for GFF3
+
 use strict;
 use warnings;
 use Carp;
@@ -232,10 +236,6 @@ sub sr_str {
 
 __END__
 
-=head1 NAME
-
-gff3_reformat - multipurpose reformatting and cleanup tool for GFF3
-
 =head1 USAGE
 
   gff3_reformat [options] gff3_file gff3_file ...
@@ -244,7 +244,7 @@ gff3_reformat - multipurpose reformatting and cleanup tool for GFF3
   no files are given, reads GFF3 from stdin.  Prints the altered GFF3
   to stdout.
 
-  Options:
+=head2 Options
 
     -s
      if passed, sort the gff3 file by reference sequence and start
@@ -269,22 +269,21 @@ gff3_reformat - multipurpose reformatting and cleanup tool for GFF3
      set the separator to use when appending a uniqifying number
      suffix to an identifier.  Default '$uniq_sep'
 
+    -I
+     Make up and add IDs to elements that don't have them.  Made up
+     IDs will be of the form <featuretype>_<unique number>.
+
     -U
      uniqify all identifiers (ID and Parent attributes) by appending
      '${uniq_sep}1', '${uniq_sep}2.  If a uniqification suffix seems
      to already be present, it will be replaced.
 
-    -I
-     Make up and add IDs to elements that don't have them.  Made up
-     IDs will be of the form <featuretype>_<unique number>.
-
-    -l $lb_size
-     uniqification lookback buffer size, defaults to $lb_size
-     identifiers.  When an ID is changed in a uniqification, the
-     Parent attributes of subfeatures need to also be changed, and the
-     lookback buffer is consulted to find the mapping of old ID -> new
-     ID.  If it's not found, the script dies.
-     Only used with -U.
+    -l 200
+     uniqification lookback buffer size, defaults to 200 identifiers.
+     When an ID is changed in a uniqification, the Parent attributes
+     of subfeatures need to also be changed, and the lookback buffer
+     is consulted to find the mapping of old ID -> new ID.  If it's
+     not found, the script dies.  Only used with -U.
 
     -f <file>
      list of GFF3 files to operate on as input.  if given, this list

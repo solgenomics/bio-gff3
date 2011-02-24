@@ -10,18 +10,14 @@ use Bio::GFF3::Transform::SyncDirectives 'gff3_add_sync_directives';
 
 gff3_add_sync_directives( \*STDOUT, @ARGV );
 
-__END__
-
-=head1 NAME
-
-gff3_insert_sync_directives - efficiently insert sync (###)
-directives into GFF3, printing to stdout
+# PODNAME: gff3_insert_sync_directives
+# ABSTRACT: efficiently insert sync (###) directives into GFF3, printing to stdout
 
 =head1 USAGE
 
     gff3_insert_sync_directives file file ... > with_syncs.gff3
 
 Note: because GFF3 is read in reverse order, cannot operate on
-streamed input.  So no STDIN, sorry.
+streamed input.  So no stdin, sorry.
 
 =cut

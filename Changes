@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+ * add -i (in-place) option to gff3_insert_sync_directives
+   command-line script
+
 0.01   2011-02-23 23:45 America/Los_Angeles
 
-* initial release
+ * initial release

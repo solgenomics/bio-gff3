@@ -97,7 +97,7 @@ sub gff3_parse_feature {
 
   my @f = split /\t/, $line;
   for( 0..8 ) {
-      if( $f[$_] eq '.' ) {
+      if( defined $f[$_] && $f[$_] eq '.' ) {
           $f[$_] = undef;
       }
   }

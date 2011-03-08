@@ -68,7 +68,7 @@ parses it and returns a hashref of its information, of the form:
     {
         seq_id => 'chr02',
         source => 'AUGUSTUS',
-        type   => 'transcript'
+        type   => 'transcript',
         start  => '23486',
         end    => '48209',
         score  => '0.02',

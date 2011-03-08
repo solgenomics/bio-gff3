@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.2       2011-03-08 15:43:01 America/New_York
+
+ * squash some warnings in LowLevel.pm
  * add -i (in-place) option to gff3_insert_sync_directives
    command-line script
 

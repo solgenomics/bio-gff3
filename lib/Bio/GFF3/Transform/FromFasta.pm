@@ -117,7 +117,7 @@ sub _for_fasta {
     local $/ = "\n>";
     while( my $seq = <$fh> ) {
         $seq =~ s/\s*>?\s*//;
-        $seq =~ s/^(\S+)\s*(.+)//
+        $seq =~ s/^(\S+) *(.*)//
             or croak 'error parsing fasta';
         my ( $ident, $desc ) = ( $1, $2 );
         $seq =~ s/\s//g;

@@ -7,14 +7,14 @@ use Test::More;
 
 use Bio::GFF3::Transform::FromFasta 'gff3_from_fasta';
 
-my $test1_fasta = <<'';
+my @tests = ( [ <<'',
 >foo  and this is my description
 ACTGA  TGATCTGATGATGATGCTTAG TGCTGA
 GATCTGATGAC
 > conan  The Barbarian!!
 CTAAGATGCTCGATGATAGCTAGCATGATGCTAGCTAGCATGCTAGCATGATGCATCGATCATGATG
 
-my $test1_gff3 = _platform_lines(<<'');
+                <<'',],
 ##gff-version 3
 foo	fasta	region	1	44	.	+	.	Name=foo;Note=and this is my description
 conan	fasta	region	1	67	.	+	.	Name=conan;Note=The Barbarian!!
@@ -25,30 +25,36 @@ GATCTGATGAC
 > conan  The Barbarian!!
 CTAAGATGCTCGATGATAGCTAGCATGATGCTAGCTAGCATGCTAGCATGATGCATCGATCATGATG
 
-my $out;
-gff3_from_fasta(
-    in   => \$test1_fasta,
-    out  => \$out,
-    type => 'region',
-    fasta_section => 1,
-  );
+            );
 
-is $out, $test1_gff3, 'right out';
+for ( @tests ) {
+    my ( $test_fasta, $test_gff3 ) = @$_;
 
-my $tempfile = File::Temp->new;
-$tempfile->print( $test1_fasta );
-$tempfile->close;
+    my $out;
+    gff3_from_fasta(
+        in   => \$test_fasta,
+        out  => \$out,
+        type => 'region',
+        fasta_section => 1,
+      );
 
-my $out2;
-gff3_from_fasta(
-    in   => "$tempfile",
-    out  => \$out2,
-    type => 'region',
-    fasta_section => 1,
-  );
+    is $out, $test_gff3, 'right out';
+
+    my $tempfile = File::Temp->new;
+    $tempfile->print( $test_fasta );
+    $tempfile->close;
+
+    my $out2;
+    gff3_from_fasta(
+        in   => "$tempfile",
+        out  => \$out2,
+        type => 'region',
+        fasta_section => 1,
+      );
 
 
-is $out, $test1_gff3, 'right out reading from tempfile';
+    is $out, $test_gff3, 'right out reading from tempfile';
+}
 
 done_testing;
 

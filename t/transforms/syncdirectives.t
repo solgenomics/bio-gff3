@@ -3,7 +3,6 @@ use warnings;
 use Test::More;
 
 use IO::Scalar;
-use File::Slurp;
 use File::Temp;
 
 use Bio::GFF3::Transform::SyncDirectives 'gff3_add_sync_directives';
@@ -18,6 +17,12 @@ use Bio::GFF3::Transform::SyncDirectives 'gff3_add_sync_directives';
 }
 
 done_testing;
+
+sub read_file {
+    open my $f, '<', shift or die "$!";
+    local $/;
+    return <$f>;
+}
 
 sub file_without_syncs {
     my $t = File::Temp->new;

@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use Getopt::Std;
+use Pod::Usage;
+use Bio::GFF3::Transform::FromFasta 'gff3_from_fasta';
+
+my %opt;
+getopts('t:fs:', \%opt ) or pod2usage();
+
+gff3_from_fasta(
+    in   => \@ARGV,
+    out  => \*STDOUT,
+    type => $opt{t},
+    fasta_section => $opt{f},
+    source => $opt{s},
+  );
+
+=head1 USAGE
+
+  gff3_from_fasta -t SO_type -s source_name  file1.fasta  file2.fasta ... > my.gff3
+
+=head1 DESCRIPTION
+
+Thin wrapper for gff3_from_fasta function in
+L<Bio::GFF3::Transform::FromFasta>.
+
+=cut
+

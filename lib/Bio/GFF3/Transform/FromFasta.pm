@@ -13,9 +13,17 @@ use Bio::GFF3::LowLevel 'gff3_format_feature';
 
 =head1 SYNOPSIS
 
-  
+  use Bio::GFF3::Transform::FromFasta 'gff3_from_fasta';
 
-=function gff3_from_fasta( in => \@files_or_fhs, out => $fh, type => 'SO_type' )
+  gff3_from_fasta(
+    in            => [ 'file1', $filehandle, ... ],
+    out           => \*STDOUT,
+    type          => 'contig',
+    fasta_section => 1,
+    source        => 'MyAnalysis',
+  );
+
+=func  gff3_from_fasta( in => \@files_or_fhs, out => $fh, type => 'SO_type' )
 
 =head3 Arguments
 

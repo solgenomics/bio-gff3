@@ -17,6 +17,9 @@ gff3_from_fasta(
     source => $opt{s},
   );
 
+# PODNAME: gff3_from_fasta
+# ABSTRACT: make GFF3 from fasta sequences
+
 =head1 USAGE
 
   gff3_from_fasta -t SO_type -s source_name  file1.fasta  file2.fasta ... > my.gff3

@@ -8,7 +8,7 @@ use Test::More;
 use Bio::GFF3::Transform::FromFasta 'gff3_from_fasta';
 
 my $test1_fasta = <<'';
->foo  and this is my description  
+>foo  and this is my description
 ACTGA  TGATCTGATGATGATGCTTAG TGCTGA
 GATCTGATGAC
 > conan  The Barbarian!!
@@ -16,10 +16,10 @@ CTAAGATGCTCGATGATAGCTAGCATGATGCTAGCTAGCATGCTAGCATGATGCATCGATCATGATG
 
 my $test1_gff3 = _platform_lines(<<'');
 ##gff-version 3
-foo	fasta	region	1	44	.	+	.	Name=foo;Note=and this is my description  
+foo	fasta	region	1	44	.	+	.	Name=foo;Note=and this is my description
 conan	fasta	region	1	67	.	+	.	Name=conan;Note=The Barbarian!!
 ##FASTA
->foo  and this is my description  
+>foo  and this is my description
 ACTGATGATCTGATGATGATGCTTAGTGCTGA
 GATCTGATGAC
 > conan  The Barbarian!!

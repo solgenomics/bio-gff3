@@ -8,11 +8,32 @@ use Data::Dumper;
 use Tie::Cache::LRU;
 use URI::Escape;
 
+use base 'Exporter';
+our @EXPORT_OK = ( 'gff3_reformat' );
+
 my $default_uniq_sep = '_';
 my $default_lb_size = 200;
 
-sub reformat {
-    my ( $out_fh, %args ) = @_;
+sub index_seq_lengths {
+    my ( $self, $seqfile ) = @_;
+
+    open my $sf, '<', $seqfile or die "$! reading $seqfile\n";
+
+    my %lengths;
+    local $/ = "\n>";
+    while ( my $s = <$sf> ) {
+        my ( $id ) = $s =~ s/(\S+).+//;
+        $s =~ s/\s//g;
+        $s or die "in '$seqfile', sequence $id has no length!\n";
+        $lengths{$id} = { start => 1, end => length($s), length => length($s), name => $id, printed => 0 };
+    }
+
+    return \%lengths;
+}
+
+sub gff3_reformat {
+    my %args = @_ > 1 ? @_ : %{$_[0]};
+    my $out_fh = $args{ out };
 
     tie my %uniq_lb, 'Tie::Cache::LRU', $lb_size;
     my %uniq_ctrs;
@@ -31,7 +52,7 @@ sub reformat {
     my $seqregions = do {
         if($opt{S}) {
             -r $opt{S} or die "cannot open '$opt{S}' for reading\n";
-            index_seqlengths($opt{S});
+            $self->index_seqlengths($opt{S});
         } else {
             {}
         }
@@ -80,7 +101,7 @@ sub reformat {
                     printed => 0,
                 };
             }
-        } elsif ( $line =~ /^\S+\t\S+\t\S+/ ) { #a data line, process it
+        } elsif ( $line =~ /^\S+\t\S+\tS+/ ) { #a data line, process it
             chomp $line;
             my @fields = split /\s+/, $line, 9;
             my $fcnt = @fields;
@@ -161,19 +182,6 @@ sub reformat {
     }
 }
 
-#given a sequence file, return a hashref of its sequence lengths
-sub index_seqlengths {
-  my $seqfile = shift;
-
-  require Bio::SeqIO;
-  my $seq_in = Bio::SeqIO->new( -file => $seqfile, -format => 'fasta');
-  my %lengths;
-  while( my $s = $seq_in->next_seq ) {
-    $lengths{$s->primary_id} = { start => 1, end => $s->length, length => $s->length, name => $s->primary_id, printed => 0 }
-      or die "in '$seqfile', sequence ".$s->primary_id." has no length!\n";
-  }
-  return \%lengths;
-}
 
 # couple of small functions for dealing with sequence-region records
 sub sr_eq {

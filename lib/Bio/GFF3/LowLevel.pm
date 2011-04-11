@@ -185,8 +185,8 @@ encoding those attributes.
 
 For convenience, single-valued attributes can have simple scalars as
 values in the passed hashref.  For example, if a feature has only one
-C<ID> attribute (as it should), you can pass C<{ ID =&gt; 'foo' }>
-instead of C<{ ID =&gt; ['foo'] }}>.
+C<ID> attribute (as it should), you can pass C<{ ID =E<gt> 'foo' }>
+instead of C<{ ID =E<gt> ['foo'] }}>.
 
 =cut
 

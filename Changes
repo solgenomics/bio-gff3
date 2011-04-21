@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.3       2011-04-21 16:39:27 America/Los_Angeles
+
  * fixed bug in SyncDirectives (gff3_insert_sync_directives)
    transform, did not work if the file contained trailing tabs.
  * added Bio::GFF3::Transform::FromFasta, which can make gff3 from

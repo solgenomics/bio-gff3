@@ -2,7 +2,7 @@ package Bio::GFF3::Transform::FromFasta;
 # ABSTRACT: make gff3 for the sequences in a fasta file
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use Carp;
 use Scalar::Util 'blessed';
 
@@ -128,13 +128,15 @@ sub _for_fasta {
 
 sub _to_filehandle {
     my ( $thing, $mode ) = @_;
+
     return $thing if
-        ref $thing
+           $thing
+        && ref $thing
         && (    ref $thing eq 'GLOB'
              || blessed $thing && $thing->can('print')
            );
 
-    open( my $f, ($mode || '<'), $thing) or die "$! opening $thing";
+    open( my $f, ($mode || '<'), $thing) or confess "$! opening $thing";
     return $f;
 }
 

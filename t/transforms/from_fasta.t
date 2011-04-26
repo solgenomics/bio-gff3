@@ -95,8 +95,8 @@ for ( @tests ) {
 
     my $out;
     gff3_from_fasta(
-        in   => \$test_fasta,
-        out  => \$out,
+        in   => IO::String->new(\$test_fasta),
+        out  => IO::String->new(\$out),
         type => 'region',
         fasta_section => 1,
       );
@@ -110,7 +110,7 @@ for ( @tests ) {
     my $out2;
     gff3_from_fasta(
         in   => "$tempfile",
-        out  => \$out2,
+        out  => IO::String->new(\$out2),
         type => 'region',
         fasta_section => 1,
       );

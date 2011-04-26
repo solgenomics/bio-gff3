@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.4       2011-04-26 14:45:29 America/Los_Angeles
+
+ * fix tests for older perls
+
 0.3       2011-04-21 16:39:27 America/Los_Angeles
 
  * fixed bug in SyncDirectives (gff3_insert_sync_directives)

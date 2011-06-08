@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.5       2011-06-08 13:04:39 America/Los_Angeles
+
  * tweak syncdirectives transform to hopefully work on win32
 
 0.4       2011-04-26 14:45:29 America/Los_Angeles

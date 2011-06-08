@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+ * tweak syncdirectives transform to hopefully work on win32
+
 0.4       2011-04-26 14:45:29 America/Los_Angeles
 
  * fix tests for older perls

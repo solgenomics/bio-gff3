@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+ * when formatting GFF3 attributes, don't print attributes with no
+   value
+
 0.5       2011-06-08 13:04:39 America/Los_Angeles
 
  * tweak syncdirectives transform to hopefully work on win32

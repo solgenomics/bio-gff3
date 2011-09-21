@@ -49,6 +49,7 @@ roundtrip(
 is( gff3_format_attributes( undef ), '.', 'format undef attributes' );
 is( gff3_format_attributes( {}    ), '.', 'format empty attributes' );
 is( gff3_format_attributes( { zee => 'zoz' } ), 'zee=zoz', 'format malformed attributes' );
+is( gff3_format_attributes( { Alias => [], ID => ['Jim'] } ), 'ID=Jim', 'skip empty attributes' );
 
 done_testing;
 

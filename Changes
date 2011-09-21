@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.6       2011-09-21 15:22:06 America/Los_Angeles
+
  * when formatting GFF3 attributes, don't print attributes with no
    value
 

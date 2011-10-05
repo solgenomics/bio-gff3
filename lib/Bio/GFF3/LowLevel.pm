@@ -216,9 +216,10 @@ sub gff3_format_attributes {
     map {
       my $key = $_;
       my $val = $attr->{$key};
-      $val = [ $val ] unless ref $val;
-      if( @$val ) {
-          "$key=".join( ',', map gff3_escape($_), @$val );
+      no warnings 'uninitialized';
+      $val = join( ',', map gff3_escape($_), ref $val eq 'ARRAY' ? @$val : $val );
+      if( length $val ) {
+          "$key=$val"
       } else {
           ()
       }

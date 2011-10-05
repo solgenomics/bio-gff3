@@ -51,6 +51,8 @@ is( gff3_format_attributes( {}    ), '.', 'format empty attributes' );
 is( gff3_format_attributes( { zee => 'zoz' } ), 'zee=zoz', 'format malformed attributes' );
 is( gff3_format_attributes( { Alias => [], ID => ['Jim'] } ), 'ID=Jim', 'skip empty attributes' );
 is( gff3_format_attributes( { Alias => [], ID => ['Jim'], Alias => ['Bob'], fogbat => ['noggin'], '01base' => ['free'], } ), 'ID=Jim;Alias=Bob;01base=free;fogbat=noggin', 'ID is forced to be first-printed attr' );
+is( gff3_format_attributes( { ID => 'Bob', zee => undef } ), 'ID=Bob', 'also skip undef attributes 1' );
+is( gff3_format_attributes( { ID => 'Bob', zee => [ undef ] } ), 'ID=Bob', 'also skip undef attributes 2' );
 
 done_testing;
 

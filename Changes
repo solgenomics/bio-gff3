@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.7       2011-10-05 14:01:47 America/Los_Angeles
+
  * when formatting GFF3 attributes, force ID, Name, Alias, and Parent
    to be printed first.
 

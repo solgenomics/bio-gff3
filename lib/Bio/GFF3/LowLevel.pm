@@ -42,6 +42,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
   gff3_parse_feature
   gff3_parse_attributes
+  gff3_parse_directive
   gff3_format_feature
   gff3_format_attributes
   gff3_escape
@@ -112,7 +113,6 @@ sub gff3_parse_feature {
   return \%parsed;
 }
 
-
 =func gff3_parse_attributes( $attr_string )
 
 Given a GFF3 attribute string, parse it and return a hashref of its
@@ -145,6 +145,42 @@ sub gff3_parse_attributes {
     }
 
     return \%attrs;
+}
+
+=func gff3_parse_directive( $line )
+
+Parse a GFF3 directive/metadata line.  Returns a hashref as:
+
+
+Or nothing if the line could not be parsed as a GFF3 directive.
+
+=cut
+
+sub gff3_parse_directive {
+    my ( $line ) = @_;
+
+
+    my ( $name, $contents ) = $line =~ /^ \s* \#\# \s* (\S+) \s* (.*) $/x
+        or return;
+
+    my $parsed = { directive => $name };
+    if( length $contents ) {
+        $contents =~ s/\s+$//;
+        $parsed->{value} = $contents;
+    }
+
+    # do a little additional parsing for sequence-region and genome-build directives
+    if( $name eq 'sequence-region' ) {
+        my ( $seqid, $start, $end ) = split /\s+/, $contents, 3;
+        s/\D//g for $start, $end;
+        @{$parsed}{qw( seq_id start end )} = ( $seqid, $start, $end );
+    }
+    elsif( $name eq 'genome-build' ) {
+        my ( $source, $buildname ) = split /\s+/, $contents, 2;
+        @{$parsed}{qw(source buildname)} = ( $source, $buildname );
+    }
+
+    return $parsed;
 }
 
 =func gff3_format_feature( \%fields )

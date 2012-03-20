@@ -94,7 +94,7 @@ Unescaping is performed according to the GFF3 specification.
 
 sub gff3_parse_feature {
   my ( $line ) = @_;
-  chomp $line;
+  $line =~ s/\s*$//;
 
   my @f = split /\t/, $line;
   for( 0..8 ) {
@@ -134,7 +134,7 @@ sub gff3_parse_attributes {
 
     return {} if !defined $attr_string || $attr_string eq '.';
 
-    chomp $attr_string;
+    $attr_string =~ s/\s*$//;
 
     my %attrs;
     for my $a ( split /;/, $attr_string ) {

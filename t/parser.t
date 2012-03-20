@@ -522,8 +522,24 @@ GATTACA
 EOF
 }
 
-done_testing;
 
+{ # try parsing from a string ref
+    my $gff3 = <<EOG;
+SL2.40ch01	ITAG_eugene	gene	80999140	81004317	.	+	.	Alias=Solyc01g098840;ID=gene:Solyc01g098840.2;Name=Solyc01g098840.2;from_BOGAS=1;length=5178
+EOG
+    my $i = Bio::GFF3::LowLevel::Parser->new( \$gff3 )->next_item;
+    is( $i->{source}, 'ITAG_eugene', 'parsed from a string ref OK' ) or diag explain $i;
+    my $tempfile = File::Temp->new;
+    $tempfile->print( $gff3 );
+    $tempfile->close;
+    open my $fh, '<', "$tempfile" or die "$! reading $tempfile";
+    $i = Bio::GFF3::LowLevel::Parser->new( $fh  )->next_item;
+    is( $i->{source}, 'ITAG_eugene', 'parsed from a filehandle OK' ) or diag explain $i;
+
+}
+
+
+done_testing;
 
 sub slurp_fh {
     my ( $fh ) = @_;

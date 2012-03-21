@@ -92,6 +92,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '17275',
               'phase' => undef,
               'score' => undef,
@@ -113,6 +114,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '16479',
               'phase' => undef,
               'score' => undef,
@@ -134,6 +136,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '17275',
               'phase' => '0',
               'score' => undef,
@@ -155,6 +158,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '17335',
               'phase' => undef,
               'score' => undef,
@@ -176,6 +180,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '18189',
               'phase' => '0',
               'score' => undef,
@@ -197,6 +202,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '17940',
               'phase' => '2',
               'score' => undef,
@@ -218,6 +224,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '18189',
               'phase' => undef,
               'score' => undef,
@@ -300,6 +307,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68211',
               'phase' => '0',
               'score' => undef,
@@ -321,6 +329,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68211',
               'phase' => '0',
               'score' => undef,
@@ -342,6 +351,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68343',
               'phase' => undef,
               'score' => undef,
@@ -363,6 +373,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68568',
               'phase' => '0',
               'score' => undef,
@@ -384,6 +395,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68568',
               'phase' => '0',
               'score' => undef,
@@ -405,6 +417,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68653',
               'phase' => undef,
               'score' => undef,
@@ -426,6 +439,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68764',
               'phase' => '0',
               'score' => undef,
@@ -447,6 +461,7 @@ my %right_stuff =
                   '1'
                 ]
               },
+              'child_features' => [],
               'end' => '68764',
               'phase' => '0',
               'score' => undef,

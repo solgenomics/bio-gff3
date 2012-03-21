@@ -89,7 +89,9 @@ sub _buffer_items {
 
     while( my $line = $self->_next_line ) {
         if( $line =~ /^ \s* [^#\s>] /x ) { #< feature line, most common case
-            $self->_buffer_feature( Bio::GFF3::LowLevel::gff3_parse_feature( $line ) );
+            my $f = Bio::GFF3::LowLevel::gff3_parse_feature( $line );
+            $f->{child_features} = [];
+            $self->_buffer_feature( $f );
             return if @$item_buffer; #< return if we were able to buffer the feature for returning
         }
         # directive or comment

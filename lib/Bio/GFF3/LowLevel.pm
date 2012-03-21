@@ -98,12 +98,12 @@ sub gff3_parse_feature {
 
   my @f = split /\t/, $line;
   for( 0..8 ) {
-      if( defined $f[$_] && $f[$_] eq '.' ) {
+      if( $f[$_] eq '.' ) {
           $f[$_] = undef;
       }
   }
-  # don't unescape the attr column, that is parsed separately
-  for( 0..7 ) {
+  # unescape only the ref and source columns
+  for( 0, 1 ) {
       $f[$_] = gff3_unescape( $f[$_] );
   }
 

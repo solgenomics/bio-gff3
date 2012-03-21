@@ -95,9 +95,6 @@ Unescaping is performed according to the GFF3 specification.
 sub gff3_parse_feature {
   my ( $line ) = @_;
 
-  chomp $line;
-  $line =~ s/\r$//;
-
   my @f = split /\t/, $line;
   for( @f ) {
       if( $_ eq '.' ) {
@@ -170,13 +167,12 @@ have additional C<source> and C<buildname> keys
 sub gff3_parse_directive {
     my ( $line ) = @_;
 
-    $line =~ s/\r?\n$//;
-
     my ( $name, $contents ) = $line =~ /^ \s* \#\# \s* (\S+) \s* (.*) $/x
         or return;
 
     my $parsed = { directive => $name };
     if( length $contents ) {
+        $contents =~ s/\r?\n$//;
         $parsed->{value} = $contents;
     }
 

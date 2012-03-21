@@ -198,15 +198,21 @@ sub _buffer_all_under_construction_features {
 ## get the next line from our file(s), returning nothing if we are out
 ## of lines and files
 sub _next_line {
-    my ( $self ) = @_;
-    my $filehandles = $self->{filehandles};
-    while( @$filehandles ) {
-        my $line = $filehandles->[0]->getline;
-        return $line if $line;
-        shift @$filehandles;
-        shift @{$self->{filethings}};
-    }
-    return;
+    no warnings;
+    # fast code path for reading a line from the first filehandle,
+    # which is not finished
+    my $first_fh = $_[0]->{filehandles}[0];
+    return <$first_fh> || do {
+        my ( $self ) = @_;
+        my $filehandles = $self->{filehandles};
+        while ( @$filehandles ) {
+            my $line = $filehandles->[0]->getline;
+            return $line if $line;
+            shift @$filehandles;
+            shift @{$self->{filethings}};
+        }
+        return;
+    };
 }
 
 ## do the right thing with a newly-parsed feature line

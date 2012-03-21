@@ -200,9 +200,10 @@ sub _buffer_all_under_construction_features {
 sub _next_line {
     no warnings;
     # fast code path for reading a line from the first filehandle,
-    # which is not finished
     my $first_fh = $_[0]->{filehandles}[0];
     return <$first_fh> || do {
+        # slower case where we are at the end, or need to change
+        # filehandles
         my ( $self ) = @_;
         my $filehandles = $self->{filehandles};
         while ( @$filehandles ) {

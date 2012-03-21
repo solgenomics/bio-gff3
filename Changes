@@ -1,8 +1,8 @@
 {{$NEXT}}
 
+ * made parsing twice as fast as version 0.9, thanks to Devel::NYTProf
  * fix bad bug with dropping the last few features in files with sync
    directives
- * sped up parsing by about 5%, thanks to Devel::NYTProf
 
 0.9       2012-03-20 20:26:04 America/Los_Angeles
 

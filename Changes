@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.8       2012-03-20 17:24:50 America/Los_Angeles
+
  * bugfix to handling of windows line-endings: parsers now remove them
    regardless of the platform on which we are running.
  * add gff3_parse_directive function to Bio::GFF3::LowLevel

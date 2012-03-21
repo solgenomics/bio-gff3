@@ -138,7 +138,6 @@ sub _buffer_items {
             my $f = Bio::GFF3::LowLevel::gff3_parse_feature( $line );
             $f->{child_features} = [];
             $self->_buffer_feature( $f );
-            return if @$item_buffer; #< return if we were able to buffer the feature for returning
         }
         # directive or comment
         elsif( my ( $hashsigns, $contents ) = $line =~ /^ \s* (\#+) (.*) /x ) {
@@ -159,7 +158,6 @@ sub _buffer_items {
                 $contents =~ s/\s*$//;
                 push @$item_buffer, { comment => $contents };
             }
-            return;
         }
         elsif( $line =~ /^ \s* $/x ) {
             # blank line, do nothing
@@ -175,6 +173,10 @@ sub _buffer_items {
             chomp $line;
             croak "$self->{filethings}[0]:$.: parse error.  Cannot parse '$line'.";
         }
+
+        # return now if we were able to find some things to put in the
+        # output buffer
+        return if @$item_buffer
     }
 
     # if we are out of lines, buffer all under-construction features

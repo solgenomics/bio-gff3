@@ -492,6 +492,8 @@ my %right_stuff =
       'type' => 'gene'
     }
   ]
+
+
 );
 
 is_deeply( \%stuff,

@@ -151,8 +151,16 @@ sub gff3_parse_attributes {
 
 Parse a GFF3 directive/metadata line.  Returns a hashref as:
 
+  {  directive => 'directive-name',
+     value     => 'the contents of the directive'
+  }
 
 Or nothing if the line could not be parsed as a GFF3 directive.
+
+In addition, C<sequence-region> and C<genome-build> directives are
+parsed further.  C<sequence-region> hashrefs have additional
+C<seq_id>, C<start>, and C<end> keys, and C<genome-build> hashrefs
+have additional C<source> and C<buildname> keys
 
 =cut
 

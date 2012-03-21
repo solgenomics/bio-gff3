@@ -1,5 +1,6 @@
 package Bio::GFF3::LowLevel::Parser;
 # ABSTRACT: a fast, low-level gff3 parser
+
 use strict;
 use warnings;
 use Carp;
@@ -12,32 +13,73 @@ use Bio::GFF3::LowLevel ();
 =head1 SYNOPSIS
 
   my $p = Bio::GFF3::LowLevel::Parser->new( $file_or_fh );
-  while( my $i = $p->next_item ) {
-      if( exists $i->{seq_id} ) {
 
+  while( my $i = $p->next_item ) {
+
+      if( exists $i->{seq_id} ) {
+          ## $i is a feature in the same format as returned by
+          ## Bio::GFF3::LowLevel::gff3_parse_feature.  do something with
+          ## it
       }
       elsif( $i->{directive} ) {
-
+          if( $i->{directive} eq 'FASTA' ) {
+              my $fasta_filehandle = $i->{filehandle};
+              ## parse the FASTA in the filehandle with BioPerl or
+              ## however you want.  or ignore it.
+          }
+          elsif( $i->{directive} eq 'gff-version' ) {
+              print "it says it is GFF version $i->{value}\n";
+          }
+          elsif( $i->{directive} eq 'sequence-region' ) {
+              print( "found a sequence-region, sequence $i->{seq_id},",
+                     " from $i->{start} to $i->{end}\n"
+                   );
+          }
       }
-      elsif( $i->{FASTA_fh} ) {
-
+      elsif( $i->{comment} ) {
+          ## this is a comment in your GFF3 file, in case you want to do
+          ## something with it.
+          print "that comment said: '$i->{comment}'\n";
       }
       else {
           die 'this should never happen!';
       }
+
   }
 
 =head1 DESCRIPTION
 
 This is a fast, low-level parser for Generic Feature Format, version 3
 (GFF3).  It is a low-level parser, it only returns dumb hashrefs.  It
-B<does> construct feature hierarchies, however, storing an arrayref of
-child features under a C<children> key of the parent feature's
-hashref.
+B<does> reconstruct feature hierarchies, however, using features'
+ID/Parent attributes.
+
+=head3 Features
+
+Features are returned in the same format as
+L<Bio::GFF3::LowLevel/gff3_parse_feature>, with an additional
+C<child_features> key containing an arrayref of child features.  Each
+of those features also have C<child_features> arrayrefs.
+
+For convenience, all features returned by this parser have
+C<child_features> arrayrefs, which may be empty.
+
+=head3 Directives
+
+Directives are returned in the same format as L<Bio::GFF3::LowLevel/gff3_parse_directive>.
+
+=head3 Comments
+
+Comments are parsed into a hashref of the form:
+
+  { comment => 'text of the comment, not including the hash mark(s) and ending newline' }
 
 =cut
 
-=func new
+=func new( $file_or_filehandle, ... )
+
+Make a new parser object that will parse the GFF3 in all of the files
+or filehandles that you give it.
 
 =cut
 
@@ -62,7 +104,11 @@ sub _open {
     return $f;
 }
 
-=func next_item
+=func next_item()
+
+Iterate through all of the items (features, directives, and comments)
+in the file(s) given to the parser.  Each item is a returned as a
+hashref.
 
 =cut
 

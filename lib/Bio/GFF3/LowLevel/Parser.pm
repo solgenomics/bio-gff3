@@ -110,6 +110,7 @@ sub _buffer_items {
                 }
             }
             else {
+                $contents =~ s/\s*$//;
                 push @$item_buffer, { comment => $contents };
             }
             return;

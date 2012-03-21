@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+0.9       2012-03-20 20:26:04 America/Los_Angeles
+
+ * write the missing documentation
+ * make all features have child_features, for convenience
+ * strip whitespace from the end of comments before returning them
+
 0.8       2012-03-20 17:24:50 America/Los_Angeles
 
  * bugfix to handling of windows line-endings: parsers now remove them

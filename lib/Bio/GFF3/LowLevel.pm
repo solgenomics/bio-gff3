@@ -97,15 +97,15 @@ sub gff3_parse_feature {
   $line =~ s/\r?\n$//;
 
   my @f = split /\t/, $line;
-  for( 0..8 ) {
-      if( $f[$_] eq '.' ) {
-          $f[$_] = undef;
+  for( @f ) {
+      if( $_ eq '.' ) {
+          $_ = undef;
       }
   }
   # unescape only the ref and source columns
-  for( 0, 1 ) {
-      $f[$_] =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
-  }
+  # (inline loop for performance)
+  $f[0] =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
+  $f[1] =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
 
   $f[8] = gff3_parse_attributes( $f[8] );
   my %parsed;

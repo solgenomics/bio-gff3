@@ -104,7 +104,7 @@ sub gff3_parse_feature {
   }
   # unescape only the ref and source columns
   for( 0, 1 ) {
-      $f[$_] = gff3_unescape( $f[$_] );
+      $f[$_] =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
   }
 
   $f[8] = gff3_parse_attributes( $f[8] );
@@ -141,7 +141,7 @@ sub gff3_parse_attributes {
         next unless $a;
         my ( $name, $values ) = split /=/, $a, 2;
         next unless defined $values;
-        push @{$attrs{$name}}, map gff3_unescape($_), split /,/, $values;
+        push @{$attrs{$name}}, map { s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg; $_ } split /,/, $values;
     }
 
     return \%attrs;
@@ -292,7 +292,5 @@ Unescapes a GFF3-escaped string.
 
 =cut
 
-sub gff3_unescape {
-    URI::Escape::uri_unescape( $_[0] )
-}
+*gff3_unescape = \&URI::Escape::uri_unescape;
 

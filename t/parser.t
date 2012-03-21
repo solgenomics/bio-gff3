@@ -507,19 +507,21 @@ for (
       [ 4, 'gff3_with_syncs.gff3' ],
       [ 51, 'au9_scaffold_subset.gff3' ],
       [ 14, 'tomato_chr4_head.gff3' ],
-      [ 5, 'directives.gff3' ],
+      [ 6, 'directives.gff3' ],
       [ 3, 'hybrid1.gff3' ],
       [ 3, 'hybrid2.gff3' ],
       [ 6, 'knownGene.gff3' ],
       [ 6, 'knownGene2.gff3' ],
       [ 11, 'mm9_sample_ensembl.gff3' ],
-      [ 13, 'tomato_test.gff3' ],
+      [ 16, 'tomato_test.gff3' ],
     ) {
     my ( $count, $f ) = @$_;
     my $p = Bio::GFF3::LowLevel::Parser->new( catfile(qw( t data ), $f ));
-    my $c = 0;
-    $c++ while $p->next_item;
-    is( $c, $count, "parsed $count things from $f" );
+    my @things;
+    while( my $thing = $p->next_item ) {
+        push @things, $thing;
+    }
+    is( scalar @things, $count, "parsed $count things from $f" ) or diag explain \@things;
 }
 
 # check the fasta at the end of the hybrid files

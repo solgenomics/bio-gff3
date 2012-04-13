@@ -1,3 +1,23 @@
+{{$NEXT}}
+
+ * Changed the default API of Bio::GFF3::LowLevel::Parser to support
+   multi-loc features.  In order to be able to group feature lines
+   that hand in some cases it would not be possibleave the same ID
+   attribute, it now returns arrayrefs that are groups of the
+   formerly-returned hashrefs.
+
+ * HOWEVER, there is a backward-compatibility layer that back-converts
+   the features to the conform to the return types in 1.1.  Existing
+   users of this code should not be adversely affected.
+
+ * Add better support for Derives_from: feature line hashrefs now have
+   a derived_features attribute holding an arrayref of the features
+   that Derives_from this one.
+
+ * Remove assumptions in the parser about child features coming after
+   their parents in the file.  The GFF3 specification does not require
+   this.
+
 1.0       2012-03-21 00:51:41 America/Los_Angeles
 
  * made parsing twice as fast as version 0.9, thanks to Devel::NYTProf

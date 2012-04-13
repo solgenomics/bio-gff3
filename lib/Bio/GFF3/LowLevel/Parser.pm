@@ -8,6 +8,8 @@ use Carp;
 use IO::Handle ();
 use Scalar::Util ();
 
+use List::MoreUtils ();
+
 use Bio::GFF3::LowLevel ();
 
 =head1 SYNOPSIS
@@ -16,10 +18,14 @@ use Bio::GFF3::LowLevel ();
 
   while( my $i = $p->next_item ) {
 
-      if( exists $i->{seq_id} ) {
-          ## $i is a feature in the same format as returned by
-          ## Bio::GFF3::LowLevel::gff3_parse_feature.  do something with
-          ## it
+      if( ref $i eq 'ARRAY' ) {
+          ## $i is an arrayref of features that have the same ID, in
+          ## the same format as returned by
+          ## Bio::GFF3::LowLevel::gff3_parse_feature.  do something
+          ## with it
+          for my $f (@$i) {
+             # something
+          }
       }
       elsif( $i->{directive} ) {
           if( $i->{directive} eq 'FASTA' ) {
@@ -52,21 +58,28 @@ use Bio::GFF3::LowLevel ();
 This is a fast, low-level parser for Generic Feature Format, version 3
 (GFF3).  It is a low-level parser, it only returns dumb hashrefs.  It
 B<does> reconstruct feature hierarchies, however, using features'
-ID/Parent attributes.
+ID/Parent/Derives_from attributes, and it B<does> group together lines
+with the same ID (i.e. features that have multiple locations).
 
 =head3 Features
 
-Features are returned in the same format as
-L<Bio::GFF3::LowLevel/gff3_parse_feature>, with an additional
-C<child_features> key containing an arrayref of child features.  Each
-of those features also have C<child_features> arrayrefs.
+Features are returned as arrayrefs containing one or more (never zero)
+feature lines parsed in the same format as
+L<Bio::GFF3::LowLevel/gff3_parse_feature>.  Each has some additional
+keys for related features: C<child_features> and C<derived_features>,
+each of which is a (possibly empty) arrayref of features
+(i.e. arrayrefs) that refer to this one as a C<Parent> or claim that
+they C<Derives_from> it.
 
-For convenience, all features returned by this parser have
-C<child_features> arrayrefs, which may be empty.
+Note that, to make code that uses this parser easier to write, B<all>
+features have C<child_features> and C<derived_features> arrayrefs.
+This means you don't have to check for the existence of these before
+seeing if they have anything in them.
 
 =head3 Directives
 
-Directives are returned in the same format as L<Bio::GFF3::LowLevel/gff3_parse_directive>.
+Directives are returned as hashrefs, returned in the same format as
+L<Bio::GFF3::LowLevel/gff3_parse_directive>.
 
 =head3 Comments
 
@@ -76,31 +89,42 @@ Comments are parsed into a hashref of the form:
 
 =cut
 
-=func new( $file_or_filehandle, ... )
+=func open( $file_or_filehandle, ... )
 
-Make a new parser object that will parse the GFF3 in all of the files
-or filehandles that you give it.
+Make a new parser object that will parse the GFF3 from all of the files
+or filehandles that you give it, as if they were all a single stream.
 
 =cut
 
-sub new {
+sub open {
     my $class = shift;
     return bless {
 
         filethings  => \@_,
         filehandles => [ map $class->_open($_), @_ ],
 
+        # features that are ready to go out and be flushed
         item_buffer => [],
 
-        under_construction_top_level_features => [],
-        under_construction_by_id              => {},
+        # features that we have to keep on hand for now because they
+        # might be referenced by something else
+        under_construction_top_level => [],
+        # index of the above by ID
+        under_construction_by_id => {},
 
+        # features that reference something we have not seen yet
+        # structured as:
+        # {  'some_id' => {
+        #     'Parent' => [ orphans that have a Parent attr referencing it ],
+        #     'Derives_from' => [ orphans that have a Derives_from attr referencing it ],
+        # }
+        under_construction_orphans => {},
     }, $class;
 }
 sub _open {
     my ( $class, $thing ) = @_;
     return $thing if ref $thing eq 'GLOB' || Scalar::Util::blessed( $thing ) && $thing->can('getline');
-    open my $f, '<', $thing or croak "$! opening '$thing' for reading";
+    CORE::open my $f, '<', $thing or croak "$! opening '$thing' for reading";
     return $f;
 }
 
@@ -136,7 +160,6 @@ sub _buffer_items {
     while( my $line = $self->_next_line ) {
         if( $line =~ /^ \s* [^#\s>] /x ) { #< feature line, most common case
             my $f = Bio::GFF3::LowLevel::gff3_parse_feature( $line );
-            $f->{child_features} = [];
             $self->_buffer_feature( $f );
         }
         # directive or comment
@@ -188,10 +211,16 @@ sub _buffer_items {
 sub _buffer_all_under_construction_features {
     my ( $self ) = @_;
 
-    push @{$self->{item_buffer}}, @{$self->{under_construction_top_level_features}};
+    push @{$self->{item_buffer}}, @{$self->{under_construction_top_level}};
 
-    $self->{under_construction_top_level_features} = [];
-    $self->{under_construction_by_id}     = {};
+    $self->{under_construction_top_level} = [];
+    $self->{under_construction_by_id} = {};
+
+    # if we have any orphans hanging around still, this is a problem. die with a parse error
+    if( grep %$_, values %{$self->{under_construction_orphans}} ) {
+        require Data::Dumper; local $Data::Dumper::Terse = 1;
+        die "parse error: orphans ", Data::Dumper::Dumper($self->{under_construction_orphans}); # TODO: make this better
+    }
 }
 
 
@@ -216,34 +245,80 @@ sub _next_line {
     };
 }
 
+my %container_attributes = ( Parent => 'child_features', Derives_from => 'derived_features' );
 ## do the right thing with a newly-parsed feature line
 sub _buffer_feature {
-    my ( $self, $feature ) = @_;
+    my ( $self, $feature_line ) = @_;
 
-    my $ids     = $feature->{attributes}{ID}     || [];
-    my $parents = $feature->{attributes}{Parent} || [];
+    $feature_line->{$_} = [] for values %container_attributes;
 
-    if( !@$ids && !@$parents ) {
-        # if it has no IDs or Parents, it's independent, so just
-        # put it in the output buffer
-        push @{$self->{item_buffer}}, $feature;
+    # NOTE: a feature is an arrayref of one or more feature lines.
+    my $ids     = $feature_line->{attributes}{ID}     || [];
+    my $parents = $feature_line->{attributes}{Parent} || [];
+    my $derives = $feature_line->{attributes}{Derives_from} || [];
+
+    if( !@$ids && !@$parents && !@$derives ) {
+        # if it has no IDs and does not refer to anything, we can just
+        # output it
+        push @{$self->{item_buffer}}, $feature_line;
         return;
     }
 
-    if( @$ids ) {
-        if( !@$parents ) {
-            push @{ $self->{under_construction_top_level_features} }, $feature;
+    my $feature;
+    for my $id ( @$ids ) {
+        if( my $existing = $self->{under_construction_by_id}{$id} ) {
+            # another location of the same feature
+            push @$existing, $feature_line;
+            $feature = $existing;
         }
-        for my $id ( @$ids ) {
+        else {
+            # haven't seen it yet
+            $feature = [ $feature_line ];
+            if( !@$parents && !@$derives ) {
+                push @{ $self->{under_construction_top_level} }, $feature;
+            }
             $self->{under_construction_by_id}{$id} = $feature;
+
+            # see if we have anything buffered that refers to it
+            $self->_resolve_references_to( $feature, $id );
         }
     }
 
-    for my $parent_id ( @$parents ) {
-        my $parent = $self->{under_construction_by_id}{$parent_id}
-            or die( "No feature found with ID=$parent_id" );
+    # try to resolve all its references
+    $self->_resolve_references_from( $feature || [ $feature_line ], { Parent => $parents, Derives_from => $derives } );
+}
 
-        push @{$parent->{child_features}}, $feature;
+sub _resolve_references_to {
+    my ( $self, $feature, $id ) = @_;
+    my $references = $self->{under_construction_orphans}{$id}
+        or return;
+    for my $attrname ( keys %$references ) {
+        my $pname = $container_attributes{$attrname} || lc $attrname;
+        for my $loc ( @$feature ) {
+            push @{ $loc->{$pname} },
+                  @{ delete $references->{$attrname} };
+        }
+    }
+}
+sub _resolve_references_from {
+    my ( $self, $feature, $references ) = @_;
+    # go through our references
+    #  if we have the feature under construction, put this feature in the right place
+    #  otherwise, put this feature in the right slot in the orphans
+
+    for my $attrname ( keys %$references ) {
+        my $pname;
+        for my $id ( @{ $references->{ $attrname } } ) {
+            if( my $other_feature = $self->{under_construction_by_id}{ $id } ) {
+                $pname ||= $container_attributes{$attrname} || lc $attrname;
+                for my $loc ( @$other_feature ) {
+                    push @{ $loc->{ $pname } }, $feature;
+                }
+            }
+            else {
+                push @{ $self->{under_construction_orphans}{$id}{$attrname} ||= [] }, $feature;
+            }
+        }
     }
 }
 

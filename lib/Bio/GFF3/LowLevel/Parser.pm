@@ -19,12 +19,12 @@ use Bio::GFF3::LowLevel ();
   while( my $i = $p->next_item ) {
 
       if( ref $i eq 'ARRAY' ) {
-          ## $i is an arrayref of features that have the same ID, in
-          ## the same format as returned by
-          ## Bio::GFF3::LowLevel::gff3_parse_feature.  do something
-          ## with it
+          ## $i is an arrayref of feature lines that have the same ID,
+          ## in the same format as returned by
+          ## Bio::GFF3::LowLevel::gff3_parse_feature
           for my $f (@$i) {
-             # something
+             # for each location of this feature
+             # do something with it
           }
       }
       elsif( $i->{directive} ) {
@@ -58,8 +58,9 @@ use Bio::GFF3::LowLevel ();
 This is a fast, low-level parser for Generic Feature Format, version 3
 (GFF3).  It is a low-level parser, it only returns dumb hashrefs.  It
 B<does> reconstruct feature hierarchies, however, using features'
-ID/Parent/Derives_from attributes, and it B<does> group together lines
-with the same ID (i.e. features that have multiple locations).
+C<ID>, C<Parent>, and C<Derives_from> attributes, and it B<does> group
+together lines with the same ID (i.e. features that have multiple
+locations).
 
 =head3 Features
 
@@ -78,7 +79,7 @@ seeing if they have anything in them.
 
 =head3 Directives
 
-Directives are returned as hashrefs, returned in the same format as
+Directives are returned as hashrefs, in the same format as
 L<Bio::GFF3::LowLevel/gff3_parse_directive>.
 
 =head3 Comments

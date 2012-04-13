@@ -128,6 +128,18 @@ sub _open {
     return $f;
 }
 
+=func new
+
+Returns a wrapped copy of this parser that returns data that is backward-compatible with what the 1.0 version of this parser returned.  Do not use in new code.
+
+=cut
+
+sub new {
+    my $class = shift;
+    require Bio::GFF3::LowLevel::Parser::1_x_backcompat;
+    return Bio::GFF3::LowLevel::Parser::1_x_backcompat->new( @_ );
+}
+
 =func next_item()
 
 Iterate through all of the items (features, directives, and comments)

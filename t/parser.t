@@ -57,6 +57,8 @@ for (
       [ 6, 'knownGene2.gff3' ],
       [ 11, 'mm9_sample_ensembl.gff3' ],
       [ 16, 'tomato_test.gff3' ],
+      [ 3, 'spec_eden.gff3' ],
+      [ 1, 'spec_match.gff3' ],
     ) {
     my ( $count, $f ) = @$_;
     my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data ), $f ));
@@ -109,6 +111,33 @@ EOG
     is( scalar( @stuff ), 6, 'got 6 top-level things' );
     is_deeply( [@stuff[0..4]], $right_output, 'got the right parse results' ) or diag explain \@stuff;
     is( $stuff[5]{directive}, 'FASTA', 'and last thing is a FASTA directive' );
+}
+
+
+# try parsing the EDEN gene from the gff3 spec
+{
+    my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data spec_eden.gff3 )));
+    my @stuff; push @stuff, $_ while $_ = $p->next_item;
+    my $eden = $stuff[2];
+    is( scalar(@$eden), 1 );
+    $eden = $eden->[0];
+    is( scalar(@{ $eden->{child_features} }), 4, 'right number of EDEN child features' );
+
+    is( $eden->{child_features}[0][0]{type}, 'TF_binding_site' );
+
+    # all the rest are mRNAs
+    my @mrnas = @{ $eden->{child_features} }[1..3];
+    is( scalar( grep @$_ == 1, @mrnas ), 3, 'all unique-IDed' );
+    @mrnas = map $_->[0], @mrnas;
+    is( scalar( grep $_->{type} eq 'mRNA', @mrnas ), 3, 'all mRNAs' );
+    # check that all the mRNAs share the last exon
+    my $last_exon = $mrnas[2]{child_features}[3][0];
+    is( $last_exon, $mrnas[0]{child_features}[3][0] );
+    is( $last_exon, $mrnas[1]{child_features}[2][0] );
+    is( scalar(@{ $mrnas[2]{child_features}} ), 6, 'mRNA00003 has 6 children' )
+        or diag explain $mrnas[2]{child_features};
+    is( scalar(@{ $mrnas[1]{child_features}} ), 4, 'mRNA00002 has 4 children' );
+    is( scalar(@{ $mrnas[0]{child_features}} ), 5, 'mRNA00001 has 5 children' );
 }
 
 done_testing;

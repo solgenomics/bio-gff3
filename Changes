@@ -1,3 +1,11 @@
+{{$NEXT}}
+
+1.2       2012-04-13 17:47:29 America/New_York
+
+ * Removed unnecessary dependency on
+   Bio::GFF3::Transform::SyncDirectives that was causing installation
+   problems.
+
 1.1       2012-04-13 01:32:21 America/New_York
 
  * Changed the default API of Bio::GFF3::LowLevel::Parser to support

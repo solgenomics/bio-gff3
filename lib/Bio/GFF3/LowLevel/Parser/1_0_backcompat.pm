@@ -1,4 +1,4 @@
-package Bio::GFF3::LowLevel::Parser::1_x_backcompat;
+package Bio::GFF3::LowLevel::Parser::1_0_backcompat;
 # ABSTRACT: compatibility layer to support Bio::GFF3::LowLevel::Parser 1.0 API
 
 use strict;

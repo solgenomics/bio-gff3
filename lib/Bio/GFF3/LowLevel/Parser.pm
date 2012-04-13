@@ -137,8 +137,8 @@ Returns a wrapped copy of this parser that returns data that is backward-compati
 
 sub new {
     my $class = shift;
-    require Bio::GFF3::LowLevel::Parser::1_x_backcompat;
-    return Bio::GFF3::LowLevel::Parser::1_x_backcompat->new( @_ );
+    require Bio::GFF3::LowLevel::Parser::1_0_backcompat;
+    return Bio::GFF3::LowLevel::Parser::1_0_backcompat->new( @_ );
 }
 
 =func next_item()

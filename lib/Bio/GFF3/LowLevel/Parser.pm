@@ -222,11 +222,11 @@ sub _buffer_items {
 ## item_buffer to be output
 sub _buffer_all_under_construction_features {
     my ( $self ) = @_;
-
     push @{$self->{item_buffer}}, @{$self->{under_construction_top_level}};
 
     $self->{under_construction_top_level} = [];
     $self->{under_construction_by_id} = {};
+    $self->{completed_references} = {};
 
     # if we have any orphans hanging around still, this is a problem. die with a parse error
     if( grep %$_, values %{$self->{under_construction_orphans}} ) {
@@ -297,7 +297,7 @@ sub _buffer_feature {
     }
 
     # try to resolve all its references
-    $self->_resolve_references_from( $feature || [ $feature_line ], { Parent => $parents, Derives_from => $derives } );
+    $self->_resolve_references_from( $feature || [ $feature_line ], { Parent => $parents, Derives_from => $derives }, $ids );
 }
 
 sub _resolve_references_to {
@@ -313,22 +313,24 @@ sub _resolve_references_to {
     }
 }
 sub _resolve_references_from {
-    my ( $self, $feature, $references ) = @_;
+    my ( $self, $feature, $references, $ids ) = @_;
     # go through our references
     #  if we have the feature under construction, put this feature in the right place
     #  otherwise, put this feature in the right slot in the orphans
 
     for my $attrname ( keys %$references ) {
         my $pname;
-        for my $id ( @{ $references->{ $attrname } } ) {
-            if( my $other_feature = $self->{under_construction_by_id}{ $id } ) {
+        for my $to_id ( @{ $references->{ $attrname } } ) {
+            if( my $other_feature = $self->{under_construction_by_id}{ $to_id } ) {
                 $pname ||= $container_attributes{$attrname} || lc $attrname;
-                for my $loc ( @$other_feature ) {
-                    push @{ $loc->{ $pname } }, $feature;
+                unless( grep $self->{completed_references}{$_}{$attrname}{$to_id}++, @$ids ) {
+                    for my $loc ( @$other_feature ) {
+                        push @{ $loc->{ $pname } }, $feature;
+                    }
                 }
             }
             else {
-                push @{ $self->{under_construction_orphans}{$id}{$attrname} ||= [] }, $feature;
+                push @{ $self->{under_construction_orphans}{$to_id}{$attrname} ||= [] }, $feature;
             }
         }
     }

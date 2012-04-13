@@ -263,7 +263,8 @@ my %container_attributes = ( Parent => 'child_features', Derives_from => 'derive
 sub _buffer_feature {
     my ( $self, $feature_line ) = @_;
 
-    $feature_line->{$_} = [] for values %container_attributes;
+    $feature_line->{'child_features'}   = [];
+    $feature_line->{'derived_features'} = [];
 
     # NOTE: a feature is an arrayref of one or more feature lines.
     my $ids     = $feature_line->{attributes}{ID}     || [];

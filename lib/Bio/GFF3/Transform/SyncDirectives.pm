@@ -1,5 +1,5 @@
 package Bio::GFF3::Transform::SyncDirectives;
-# ABSTRACT: insert sync (###) directives into an existing GFF3 file.
+# ABSTRACT: insert sync (###) directives into an existing GFF3 file.  WARNING: this module does not really work in the general case, read the DESCRIPTION section below.
 
 use strict;
 use warnings;
@@ -66,6 +66,15 @@ __END__
     my @input_files = ( 'input1.gff3', 'input2.gff3' );
     open my $output_fh, '>', 'myoutputfile.gff3';
     gff3_add_sync_directives( $output_fh, @input_files );
+
+=head1 DESCRIPTIONS
+
+This module, and its gff3_insert_sync_directives script, have some
+important caveats: they do not support C<Derives_from>, they will not
+work if any child features come in the file B<before> their parent
+(which in practice is unusual), and they do not work when more than
+one feature line has the same ID.  Perhaps in the future I may get
+around to writing a more capable version of this.
 
 =head1 FUNCTIONS
 

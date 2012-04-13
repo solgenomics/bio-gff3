@@ -4,6 +4,12 @@ package Bio::GFF3::LowLevel::Parser::1_0_backcompat;
 use strict;
 use warnings;
 
+=func new( $file_or_filehandle, ... )
+
+Constructor for 1.0 backcompat layer.  Do not use directly.
+
+=cut
+
 sub new {
     my $class = shift;
     my $self = {
@@ -12,6 +18,12 @@ sub new {
     };
     return bless $self, $class;
 }
+
+=func next_item
+
+1.0 backcompat layer, wraps next_item() from the parser to transform features back to 1.0 format.
+
+=cut
 
 sub next_item {
     my ( $self ) = @_;

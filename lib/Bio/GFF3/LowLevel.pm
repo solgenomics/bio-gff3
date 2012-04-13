@@ -94,6 +94,7 @@ Unescaping is performed according to the GFF3 specification.
 
 sub gff3_parse_feature {
   my ( $line ) = @_;
+  no warnings 'uninitialized';
 
   my @f = split /\t/, $line;
   for( @f ) {

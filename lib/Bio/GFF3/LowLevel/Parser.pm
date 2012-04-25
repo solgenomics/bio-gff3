@@ -14,7 +14,7 @@ use Bio::GFF3::LowLevel ();
 
 =head1 SYNOPSIS
 
-  my $p = Bio::GFF3::LowLevel::Parser->new( $file_or_fh );
+  my $p = Bio::GFF3::LowLevel::Parser->open( $file_or_fh );
 
   while( my $i = $p->next_item ) {
 

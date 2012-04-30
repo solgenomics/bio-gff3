@@ -151,24 +151,29 @@ hashref.
 
 sub next_item {
     my ( $self ) = @_;
-    my $item_buffer = $self->{item_buffer};
 
     # try to get more items if the buffer is empty
-    $self->_buffer_items unless @$item_buffer;
+    $self->_buffer_items unless $self->_buffered_items_count;
 
     # return the next item if we have some
-    return shift @$item_buffer if @$item_buffer;
+    return shift @{ $self->{item_buffer}} if $self->_buffered_items_count;
 
     # if we were not able to get any more items, return nothing
     return;
+}
+
+sub _buffer_item {
+    push @{$_[0]->{item_buffer}}, $_[1];
+}
+
+sub _buffered_items_count {
+    scalar @{ $_[0]->{item_buffer} }
 }
 
 ## get and parse lines from the files(s) to add at least one item to
 ## the buffer
 sub _buffer_items {
     my ( $self ) = @_;
-
-    my $item_buffer = $self->{item_buffer};
 
     while( my $line = $self->_next_line ) {
         if( $line =~ /^ \s* [^#\s>] /x ) { #< feature line, most common case
@@ -184,15 +189,15 @@ sub _buffer_items {
                 my $directive = Bio::GFF3::LowLevel::gff3_parse_directive( $line );
                 if( $directive->{directive} eq 'FASTA' ) {
                     $self->_buffer_all_under_construction_features;
-                    push @$item_buffer, { directive => 'FASTA', filehandle => shift @{$self->{filehandles} } };
+                    $self->_buffer_item( { directive => 'FASTA', filehandle => shift @{$self->{filehandles} } });
                     shift @{$self->{filethings}};
                 } else {
-                    push @$item_buffer, $directive;
+                    $self->_buffer_item( $directive );
                 }
             }
             else {
                 $contents =~ s/\s*$//;
-                push @$item_buffer, { comment => $contents };
+                $self->_buffer_item( { comment => $contents } );
             }
         }
         elsif( $line =~ /^ \s* $/x ) {
@@ -203,7 +208,7 @@ sub _buffer_items {
             # idea to include this in the format spec.  increases
             # implementation complexity by a lot.
             $self->_buffer_all_under_construction_features;
-            push @$item_buffer, $self->_handle_implicit_fasta_start( $line );
+            $self->_buffer_item( $self->_handle_implicit_fasta_start( $line ) );
         }
         else { # it's a parse error
             chomp $line;
@@ -212,7 +217,7 @@ sub _buffer_items {
 
         # return now if we were able to find some things to put in the
         # output buffer
-        return if @$item_buffer
+        return if $self->_buffered_items_count;
     }
 
     # if we are out of lines, buffer all under-construction features
@@ -223,7 +228,14 @@ sub _buffer_items {
 ## item_buffer to be output
 sub _buffer_all_under_construction_features {
     my ( $self ) = @_;
-    push @{$self->{item_buffer}}, @{$self->{under_construction_top_level}};
+
+    # since the under_construction_top_level buffer is likely to be
+    # much larger than the item_buffer, we swap them and unshift the
+    # existing buffer onto it to avoid a big copy.
+    my $old_buffer = $self->{item_buffer};
+    $self->{item_buffer} = $self->{under_construction_top_level};
+    unshift @{$self->{item_buffer}}, @$old_buffer;
+    undef $old_buffer;
 
     $self->{under_construction_top_level} = [];
     $self->{under_construction_by_id} = {};
@@ -274,7 +286,7 @@ sub _buffer_feature {
     if( !@$ids && !@$parents && !@$derives ) {
         # if it has no IDs and does not refer to anything, we can just
         # output it
-        push @{$self->{item_buffer}}, $feature_line;
+        $self->_buffer_item( $feature_line );
         return;
     }
 

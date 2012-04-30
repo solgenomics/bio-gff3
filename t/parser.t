@@ -136,8 +136,11 @@ EOG
     is( $last_exon, $mrnas[1]{child_features}[2][0] );
     is( scalar(@{ $mrnas[2]{child_features}} ), 6, 'mRNA00003 has 6 children' )
         or diag explain $mrnas[2]{child_features};
-    is( scalar(@{ $mrnas[1]{child_features}} ), 4, 'mRNA00002 has 4 children' );
-    is( scalar(@{ $mrnas[0]{child_features}} ), 5, 'mRNA00001 has 5 children' );
+    is( scalar(@{ $mrnas[1]{child_features}} ), 4, 'mRNA00002 has 4 children' )
+        or diag explain $mrnas[1]{child_features};
+    is( scalar(@{ $mrnas[0]{child_features}} ), 5, 'mRNA00001 has 5 children' )
+        or diag explain $mrnas[0]{child_features};
+
 }
 
 done_testing;

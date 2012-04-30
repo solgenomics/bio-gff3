@@ -11,6 +11,7 @@ use Scalar::Util ();
 use List::MoreUtils ();
 
 use Bio::GFF3::LowLevel ();
+use Bio::GFF3::LowLevel::Parser::TempStorage::Memory ();
 
 =head1 SYNOPSIS
 
@@ -104,22 +105,9 @@ sub open {
         filethings  => \@_,
         filehandles => [ map $class->_open($_), @_ ],
 
-        # features that are ready to go out and be flushed
-        item_buffer => [],
+        temp => Bio::GFF3::LowLevel::Parser::TempStorage::Memory->new,
 
-        # features that we have to keep on hand for now because they
-        # might be referenced by something else
-        under_construction_top_level => [],
-        # index of the above by ID
-        under_construction_by_id => {},
-
-        # features that reference something we have not seen yet
-        # structured as:
-        # {  'some_id' => {
-        #     'Parent' => [ orphans that have a Parent attr referencing it ],
-        #     'Derives_from' => [ orphans that have a Derives_from attr referencing it ],
-        # }
-        under_construction_orphans => {},
+        completed_references => {},
     }, $class;
 }
 sub _open {
@@ -156,19 +144,22 @@ sub next_item {
     $self->_buffer_items unless $self->_buffered_items_count;
 
     # return the next item if we have some
-    return shift @{ $self->{item_buffer}} if $self->_buffered_items_count;
+    return $self->_shift_item if $self->_buffered_items_count;
 
     # if we were not able to get any more items, return nothing
     return;
 }
 
+sub _shift_item {
+    $_[0]->{temp}->output_buffer_next;
+}
 sub _buffer_item {
-    push @{$_[0]->{item_buffer}}, $_[1];
+    $_[0]->{temp}->output_buffer_add( $_[1] );
+}
+sub _buffered_items_count {
+    $_[0]->{temp}->output_buffer_size;
 }
 
-sub _buffered_items_count {
-    scalar @{ $_[0]->{item_buffer} }
-}
 
 ## get and parse lines from the files(s) to add at least one item to
 ## the buffer
@@ -228,26 +219,9 @@ sub _buffer_items {
 ## item_buffer to be output
 sub _buffer_all_under_construction_features {
     my ( $self ) = @_;
-
-    # since the under_construction_top_level buffer is likely to be
-    # much larger than the item_buffer, we swap them and unshift the
-    # existing buffer onto it to avoid a big copy.
-    my $old_buffer = $self->{item_buffer};
-    $self->{item_buffer} = $self->{under_construction_top_level};
-    unshift @{$self->{item_buffer}}, @$old_buffer;
-    undef $old_buffer;
-
-    $self->{under_construction_top_level} = [];
-    $self->{under_construction_by_id} = {};
+    $self->{temp}->flush_under_construction;
     $self->{completed_references} = {};
-
-    # if we have any orphans hanging around still, this is a problem. die with a parse error
-    if( grep %$_, values %{$self->{under_construction_orphans}} ) {
-        require Data::Dumper; local $Data::Dumper::Terse = 1;
-        die "parse error: orphans ", Data::Dumper::Dumper($self->{under_construction_orphans}); # TODO: make this better
-    }
 }
-
 
 ## get the next line from our file(s), returning nothing if we are out
 ## of lines and files
@@ -292,7 +266,7 @@ sub _buffer_feature {
 
     my $feature;
     for my $id ( @$ids ) {
-        if( my $existing = $self->{under_construction_by_id}{$id} ) {
+        if( my $existing = $self->{temp}->under_construction_get($id) ) {
             # another location of the same feature
             push @$existing, $feature_line;
             $feature = $existing;
@@ -300,10 +274,7 @@ sub _buffer_feature {
         else {
             # haven't seen it yet
             $feature = [ $feature_line ];
-            if( !@$parents && !@$derives ) {
-                push @{ $self->{under_construction_top_level} }, $feature;
-            }
-            $self->{under_construction_by_id}{$id} = $feature;
+            $self->{temp}->under_construction_add( $feature, $id, !@$parents && !@$derives );
 
             # see if we have anything buffered that refers to it
             $self->_resolve_references_to( $feature, $id );
@@ -316,7 +287,7 @@ sub _buffer_feature {
 
 sub _resolve_references_to {
     my ( $self, $feature, $id ) = @_;
-    my $references = $self->{under_construction_orphans}{$id}
+    my $references = $self->{temp}->orphans_get( $id )
         or return;
     for my $attrname ( keys %$references ) {
         my $pname = $container_attributes{$attrname} || lc $attrname;
@@ -335,7 +306,7 @@ sub _resolve_references_from {
     for my $attrname ( keys %$references ) {
         my $pname;
         for my $to_id ( @{ $references->{ $attrname } } ) {
-            if( my $other_feature = $self->{under_construction_by_id}{ $to_id } ) {
+            if( my $other_feature = $self->{temp}->under_construction_get( $to_id ) ) {
                 $pname ||= $container_attributes{$attrname} || lc $attrname;
                 unless( grep $self->{completed_references}{$_}{$attrname}{$to_id}++, @$ids ) {
                     for my $loc ( @$other_feature ) {
@@ -344,7 +315,7 @@ sub _resolve_references_from {
                 }
             }
             else {
-                push @{ $self->{under_construction_orphans}{$to_id}{$attrname} ||= [] }, $feature;
+                $self->{temp}->orphans_add( $to_id, $attrname, $feature );
             }
         }
     }

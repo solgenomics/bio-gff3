@@ -1,15 +1,21 @@
-package Bio::GFF3::LowLevel::Parser::TempStorage::Memory;
+package Bio::GFF3::LowLevel::Parser::TempStorage::DBM;
 use strict;
 use warnings;
 
+use DB_File;
+use MLDBM qw( DB_File Storable );
+use Fcntl;
+
+use File::Temp ();
+
 sub new {
-    bless {
+    my $self = bless {
         # features that are ready to go out and be flushed
         item_buffer => [],
 
         # features that we have to keep on hand for now because they
         # might be referenced by something else
-        under_construction_top_level => [],
+        under_construction_order => [],
         # index of the above by ID
         under_construction_by_id => {},
 
@@ -21,7 +27,9 @@ sub new {
         # }
         under_construction_orphans => {},
 
-    }, shift
+    }, shift;
+    $self->_tie;
+    return $self;
 }
 
 sub output_buffer_add {
@@ -34,19 +42,14 @@ sub output_buffer_next {
     shift @{ $_[0]->{item_buffer} };
 }
 
-
 sub flush_under_construction {
     my ( $self ) = @_;
 
-    # since the under_construction_top_level buffer is likely to be
-    # much larger than the item_buffer, we swap them and unshift the
-    # existing buffer onto it to avoid a big copy.
-    my $old_buffer = $self->{item_buffer};
-    $self->{item_buffer} = $self->{under_construction_top_level};
-    unshift @{$self->{item_buffer}}, @$old_buffer;
-    undef $old_buffer;
+    for my $id ( @{ $self->{under_construction_order} } ) {
+        push @{ $self->{item_buffer} }, $self->under_construction_get( $id );
+    }
 
-    $self->{under_construction_top_level} = [];
+    $self->{under_construction_order} = [];
     $self->{under_construction_by_id} = {};
 
     # if we have any orphans hanging around still, this is a problem. die with a parse error
@@ -54,19 +57,25 @@ sub flush_under_construction {
         require Data::Dumper; local $Data::Dumper::Terse = 1;
         die "parse error: orphans ", Data::Dumper::Dumper($self->{under_construction_orphans}); # TODO: make this better
     }
+
+    $self->_tie;
 }
 sub under_construction_get {
     $_[0]->{under_construction_by_id}{$_[1]}
 }
 
+sub under_construction_update {
+    my ( $self, $id, $value ) = @_;
+    $self->{under_construction_by_id}{$id} = $value;
+}
+
 sub under_construction_add {
     my ( $self, $feature, $id, $is_top_level ) = @_;
     if( $is_top_level ) {
-        push @{ $self->{under_construction_top_level} }, $feature;
+        push @{ $self->{under_construction_order} }, $id;
     }
     $self->{under_construction_by_id}{$id} = $feature;
 }
-sub under_construction_update {} # no-op for memory backend
 
 sub orphans_get {
     return $_[0]->{under_construction_orphans}{$_[1]};
@@ -77,5 +86,14 @@ sub orphans_add {
     push @{ $self->{under_construction_orphans}{$to_id}{$attrname} ||= [] }, $feature;
 }
 
+sub _tie {
+    my ( $self ) = @_;
+    my $t = $self->{tempfiles} = {
+        map { my $f = File::Temp->new; $f->close; $_ => $f } qw(
+            uc_by_id
+        )
+    };
+    tie %{$self->{under_construction_by_id}}, 'MLDBM', $t->{uc_by_id}->filename, O_RDWR|O_CREAT, 0660, $DB_HASH;
+}
 
 1;

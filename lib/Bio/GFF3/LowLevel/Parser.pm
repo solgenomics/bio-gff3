@@ -12,6 +12,7 @@ use List::MoreUtils ();
 
 use Bio::GFF3::LowLevel ();
 use Bio::GFF3::LowLevel::Parser::TempStorage::Memory ();
+use Bio::GFF3::LowLevel::Parser::TempStorage::DBM ();
 
 =head1 SYNOPSIS
 
@@ -105,7 +106,7 @@ sub open {
         filethings  => \@_,
         filehandles => [ map $class->_open($_), @_ ],
 
-        temp => Bio::GFF3::LowLevel::Parser::TempStorage::Memory->new,
+        temp => Bio::GFF3::LowLevel::Parser::TempStorage::DBM->new,
 
         completed_references => {},
     }, $class;
@@ -270,6 +271,7 @@ sub _buffer_feature {
             # another location of the same feature
             push @$existing, $feature_line;
             $feature = $existing;
+            $self->{temp}->under_construction_update( $id, $feature );
         }
         else {
             # haven't seen it yet
@@ -296,6 +298,7 @@ sub _resolve_references_to {
                   @{ delete $references->{$attrname} };
         }
     }
+    $self->{temp}->under_construction_update( $id, $feature );
 }
 sub _resolve_references_from {
     my ( $self, $feature, $references, $ids ) = @_;
@@ -313,6 +316,7 @@ sub _resolve_references_from {
                         push @{ $loc->{ $pname } }, $feature;
                     }
                 }
+                $self->{temp}->under_construction_update( $to_id, $other_feature );
             }
             else {
                 $self->{temp}->orphans_add( $to_id, $attrname, $feature );

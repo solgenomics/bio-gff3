@@ -140,6 +140,14 @@ EOG
     is( scalar(@{ $mrnas[0]{child_features}} ), 5, 'mRNA00001 has 5 children' );
 }
 
+# try parsing an excerpt of the refGene gff3
+{
+    my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data refGene_excerpt.gff3 )));
+    my @stuff; push @stuff, $_ while $_ = $p->next_item;
+    ok(1);
+    #is_deeply( \@stuff, [] ) or diag explain \@stuff;
+}
+
 done_testing;
 
 sub slurp_fh {

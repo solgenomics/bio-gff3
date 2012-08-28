@@ -576,6 +576,14 @@ EOG
 
 }
 
+{ # parse a refGene excerpt with backcompat
+    my $p = Bio::GFF3::LowLevel::Parser->new( catfile(qw( t data ), 'refGene_excerpt.gff3' ));
+    while( my $i = $p->next_item ) {
+        1;
+        #diag explain $i;
+    }
+    ok(1);
+}
 
 done_testing;
 

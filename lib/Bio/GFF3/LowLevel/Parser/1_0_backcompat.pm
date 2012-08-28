@@ -54,6 +54,7 @@ sub _buffer_items {
 # take a 2.x feature arrayref, return a list of 1.x-compliant features
 sub _xform_1x {
     my ( $self, $f ) = @_;
+    return $f unless ref $f eq 'ARRAY';
     for my $line (@$f) {
         for my $attr ( 'child_features', 'derived_features' ) {
             $line->{$attr} = [

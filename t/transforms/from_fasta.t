@@ -3,7 +3,7 @@ use warnings;
 
 use File::Temp;
 use IO::String;
-use Test::More;
+use Test::More 0.88;
 
 use Bio::GFF3::Transform::FromFasta 'gff3_from_fasta';
 

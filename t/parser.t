@@ -144,7 +144,15 @@ EOG
 {
     my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data refGene_excerpt.gff3 )));
     my @stuff; push @stuff, $_ while $_ = $p->next_item;
-    ok(1);
+    ok(1, 'parsed refGene excerpt');
+    #is_deeply( \@stuff, [] ) or diag explain \@stuff;
+}
+
+# try parsing an excerpt of the TAIR10 gff3
+{
+    my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data tair10.gff3 )));
+    my @stuff; push @stuff, $_ while $_ = $p->next_item;
+    ok(1, 'parsed tair10 excerpt');
     #is_deeply( \@stuff, [] ) or diag explain \@stuff;
 }
 

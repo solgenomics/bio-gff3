@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.6       2013-07-26 11:24:16 EST5EDT
+
  * Improved the error message for when references between features
    cannot be resolved.  Instead of just Data::Dumper-ing the data
    structure, prints a formatted report of which references could not

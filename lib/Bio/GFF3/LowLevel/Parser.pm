@@ -243,9 +243,53 @@ sub _buffer_all_under_construction_features {
 
     # if we have any orphans hanging around still, this is a problem. die with a parse error
     if( grep %$_, values %{$self->{under_construction_orphans}} ) {
-        require Data::Dumper; local $Data::Dumper::Terse = 1;
-        die "parse error: orphans ", Data::Dumper::Dumper($self->{under_construction_orphans}); # TODO: make this better
+        die <<EOM.$self->_unresolved_references_report;
+
+GFF3 parse error: some features reference other features that do not exist in the file (or in the same '###' scope).  A list of them:
+EOM
     }
+}
+
+# makes a string with a tabular report of all the currently unresolved
+# references: Parent, Derives_from, etc.
+sub _unresolved_references_report {
+    my ( $self ) = @_;
+
+    require IO::Handle;
+
+    our $id;
+    our $reference_string;
+
+    my $report = '';
+    CORE::open my $fh, '>', \$report;
+$fh->print(<<'');
+ ID                 |           Cannot Find
+----------------------------------------------------------------------
+
+    no strict 'subs';
+    format UNRESOLVED_REFERENCES_REPORT =
+@<<<<<<<<<<<<<<<<<< | @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$id,                  $reference_string
+.
+
+
+
+    for my $refid ( keys %{$self->{under_construction_orphans}} ) {
+        my $escaped_refid = Bio::GFF3::LowLevel::gff3_escape( $refid );
+        my $references = $self->{under_construction_orphans}{$refid};
+        for my $reftype ( keys %$references ) {
+            my $references = $references->{$reftype};
+            for my $feature (@$references) {
+                for my $location ( @$feature ) {
+                    $id = (($location->{attributes}||{})->{ID}||[])->[0]; #< avoid autovivification
+                    $id = '(no id)' unless defined $id;
+                    $reference_string = "$reftype=$escaped_refid";
+                    $fh->format_write( Bio::GFF3::LowLevel::Parser::UNRESOLVED_REFERENCES_REPORT );
+                }
+            }
+        }
+    }
+    return $report;
 }
 
 

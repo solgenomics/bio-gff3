@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+ * Improved the error message for when references between features
+   cannot be resolved.  Instead of just Data::Dumper-ing the data
+   structure, prints a formatted report of which references could not
+   be resolved.
+
 1.5       2012-12-14 12:40:58 America/New_York
 
  * Added minimum Test::More version of 0.88 to tests.

@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+ * Added `max_lookback` method to Parser, allowing applications to set
+   a maximum number of features to be stored in case they might be
+   referenced by features coming later in the file.  Can make it
+   possible to parse GFF3 that does not contain enough '###'
+   directives.
+
 1.6       2013-07-26 11:24:16 EST5EDT
 
  * Improved the error message for when references between features

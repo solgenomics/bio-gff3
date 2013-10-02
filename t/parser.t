@@ -8,6 +8,7 @@ use File::Spec::Functions 'catfile';
 use Bio::GFF3::LowLevel::Parser;
 
 my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data gff3_with_syncs.gff3 )));
+$p->max_lookback( 1 );
 
 # {
 #     my $m = $p->_merge_features(
@@ -62,6 +63,7 @@ for (
     ) {
     my ( $count, $f ) = @$_;
     my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data ), $f ));
+    $p->max_lookback(10);
     my @things;
     while( my $thing = $p->next_item ) {
         push @things, $thing;
@@ -72,6 +74,7 @@ for (
 # check the fasta at the end of the hybrid files
 for my $f ( 'hybrid1.gff3', 'hybrid2.gff3' ) {
     my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data ), $f ));
+    $p->max_lookback(3);
     my @items;
     while( my $item = $p->next_item ) {
         push @items, $item;
@@ -105,6 +108,8 @@ EOG
 # check for support for children before parents, and for Derives_from
 {
     my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data knownGene_out_of_order.gff3 )));
+    $p->max_lookback(2);
+
     my @stuff; push @stuff, $_ while $_ = $p->next_item;
 
     my $right_output = do ''.catfile(qw( t data knownGene_out_of_order.dumped_result ));

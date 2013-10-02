@@ -129,6 +129,20 @@ sub _open {
     return $f;
 }
 
+=func max_lookback( $features )
+
+Set a maximum number of features the parser will keep buffered in case
+there are features later in the file referring to it.  By default,
+there is no limit, with the parser instead relying on the presense of
+'###' marks in the GFF3 file.
+
+=cut
+
+sub max_lookback {
+    my ( $self, $count ) = @_;
+    $self->{max_lookback} = $count
+}
+
 =func new
 
 Returns a wrapped copy of this parser that returns data that is backward-compatible with what the 1.0 version of this parser returned.  Do not use in new code.
@@ -215,6 +229,9 @@ sub _buffer_items {
             croak "$self->{filethings}[0]:$.: parse error.  Cannot parse '$line'.";
         }
 
+        # buffer old features if we are starting to approach our mem limit
+        $self->_ensure_lookback_limit;
+
         # return now if we were able to find some things to put in the
         # output buffer
         return if $self->_buffered_items_count;
@@ -247,6 +264,22 @@ sub _buffer_all_under_construction_features {
 
 GFF3 parse error: some features reference other features that do not exist in the file (or in the same '###' scope).  A list of them:
 EOM
+    }
+}
+
+sub _ensure_lookback_limit {
+    my ( $self ) = @_;
+
+    return unless defined $self->{max_lookback};
+
+    my $toplevel = $self->{under_construction_top_level};
+    my $byid = $self->{under_construction_by_id};
+    my $out_buffer = $self->{item_buffer};
+    no warnings 'uninitialized';
+    while( @$toplevel > $self->{max_lookback} ) {
+        my $f = shift @$toplevel;
+        delete $byid->{$_} for map @{$_->{attributes}{ID}}, @$f;
+        push @$out_buffer, $f;
     }
 }
 

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.7       2013-10-02 15:49:40 EST5EDT
+
  * Added `max_lookback` method to Parser, allowing applications to set
    a maximum number of features to be stored in case they might be
    referenced by features coming later in the file.  Can make it

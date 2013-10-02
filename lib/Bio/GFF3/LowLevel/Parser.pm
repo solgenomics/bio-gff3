@@ -133,7 +133,7 @@ sub _open {
 
 Set a maximum number of features the parser will keep buffered in case
 there are features later in the file referring to it.  By default,
-there is no limit, with the parser instead relying on the presense of
+there is no limit, with the parser instead relying on the presence of
 '###' marks in the GFF3 file.
 
 =cut
@@ -158,8 +158,8 @@ sub new {
 =func next_item()
 
 Iterate through all of the items (features, directives, and comments)
-in the file(s) given to the parser.  Each item is a returned as a
-hashref.
+in the file(s) given to the parser.  Features are arrayrefs of
+hashrefs, and directives and comments are hashrefs.
 
 =cut
 

@@ -60,6 +60,7 @@ for (
       [ 16, 'tomato_test.gff3' ],
       [ 3, 'spec_eden.gff3' ],
       [ 1, 'spec_match.gff3' ],
+      [ 8, 'quantitative.gff3' ],
     ) {
     my ( $count, $f ) = @$_;
     my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data ), $f ));
@@ -69,6 +70,7 @@ for (
         push @things, $thing;
     }
     is( scalar @things, $count, "parsed $count things from $f" ) or diag explain \@things;
+    is( scalar ( grep {ref $_ eq 'HASH' && exists $_->{phase}} @things), 0, "no bare-hashref features in $f" );
 }
 
 # check the fasta at the end of the hybrid files

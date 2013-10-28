@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.8       2013-10-28 10:57:26 EST5EDT
+
  * Fixed a bug in which feature lines with no ID, Parent, or
    Derives_from attributes were being returned as a bare hashref
    instead of a single-element arrayref as they should be.

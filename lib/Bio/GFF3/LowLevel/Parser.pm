@@ -363,7 +363,7 @@ sub _buffer_feature {
     if( !@$ids && !@$parents && !@$derives ) {
         # if it has no IDs and does not refer to anything, we can just
         # output it
-        $self->_buffer_item( $feature_line );
+        $self->_buffer_item( [ $feature_line ] );
         return;
     }
 

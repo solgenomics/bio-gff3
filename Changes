@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+ * Fixed a bug in which feature lines with no ID, Parent, or
+   Derives_from attributes were being returned as a bare hashref
+   instead of a single-element arrayref as they should be.
+
 1.7       2013-10-02 15:49:40 EST5EDT
 
  * Added `max_lookback` method to Parser, allowing applications to set

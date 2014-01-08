@@ -531,7 +531,6 @@ for (
       [ 3, 'hybrid2.gff3' ],
       [ 6, 'knownGene.gff3' ],
       [ 6, 'knownGene2.gff3' ],
-      [ 13, 'mm9_sample_ensembl.gff3' ],
       [ 16, 'tomato_test.gff3' ],
     ) {
     my ( $count, $f ) = @$_;

@@ -226,7 +226,7 @@ sub _buffer_items {
         }
         else { # it's a parse error
             chomp $line;
-            croak "$self->{filethings}[0]:$.: parse error.  Cannot parse '$line'.";
+            $self->_parse_error("parse error.  Cannot parse '$line'.");
         }
 
         # buffer old features if we are starting to approach our mem limit
@@ -239,6 +239,11 @@ sub _buffer_items {
 
     # if we are out of lines, buffer all under-construction features
     $self->_buffer_all_under_construction_features;
+}
+
+sub _parse_error {
+    my ( $self, $error ) = @_;
+    croak "$self->{filethings}[0]:$.: $error";
 }
 
 ## take all under-construction features and put them in the
@@ -371,6 +376,9 @@ sub _buffer_feature {
     for my $id ( @$ids ) {
         if( my $existing = $self->{under_construction_by_id}{$id} ) {
             # another location of the same feature
+            unless( $existing->[-1]->{type} eq $feature_line->{type} ) {
+                $self->_parse_error("type ".$feature_line->{type}." is not the same as previous type ".$existing->[-1]->{type}." for ID '".$id."'");
+            }
             push @$existing, $feature_line;
             $feature = $existing;
         }

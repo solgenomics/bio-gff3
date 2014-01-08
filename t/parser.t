@@ -56,7 +56,6 @@ for (
       [ 3, 'hybrid2.gff3' ],
       [ 6, 'knownGene.gff3' ],
       [ 6, 'knownGene2.gff3' ],
-      [ 11, 'mm9_sample_ensembl.gff3' ],
       [ 16, 'tomato_test.gff3' ],
       [ 3, 'spec_eden.gff3' ],
       [ 1, 'spec_match.gff3' ],
@@ -161,6 +160,18 @@ EOG
     my @stuff; push @stuff, $_ while $_ = $p->next_item;
     ok(1, 'parsed tair10 excerpt');
     #is_deeply( \@stuff, [] ) or diag explain \@stuff;
+}
+
+for my $error_file ( 'mm9_sample_ensembl.gff3',
+                     'Saccharomyces_cerevisiae_EF3_e64.gff3'
+                   ) {
+
+    # check that Saccharomyces_cerevisiae_EF3_e64.gff3 throws a parse error
+    eval {
+        my $p = Bio::GFF3::LowLevel::Parser->open( catfile(qw( t data ), $error_file ) );
+        1 while $_ = $p->next_item;
+    };
+    like( $@, qr/not the same/, 'got a error about types not being the same' );
 }
 
 done_testing;

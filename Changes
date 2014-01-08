@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+ * Added a check in the Parser to make sure that all lines that share
+   a single ID have the same type.
+
 1.8       2013-10-28 10:57:26 EST5EDT
 
  * Fixed a bug in which feature lines with no ID, Parent, or
